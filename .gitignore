@@ -14,3 +14,6 @@ yarn-error.log*
 
 # 构建产物
 *.tsbuildinfo
+
+# Qoder Sites 本地绑定描述文件(由 CLI 生成)
+*.qoder.site
