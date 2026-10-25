@@ -13,6 +13,9 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4-38BDF8?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![在线体验](https://img.shields.io/badge/在线体验-qoder.website-D8452A)](https://hot-radar-j8vzdjdlheu.qoder.website)
+
+**🚀 在线体验:https://hot-radar-j8vzdjdlheu.qoder.website**
 
 </div>
 
@@ -60,7 +63,7 @@ AI 能力通过 [OpenRouter](https://openrouter.ai) 提供,浏览器直连、无
 
 ## 部署
 
-`npm run build` 产出的 `dist/` 是完全自包含的静态站点:
+`npm run build` 产出的 `dist/` 是完全自包含的静态站点,本项目自己的线上站点就跑在 Qoder Sites 上:[hot-radar-j8vzdjdlheu.qoder.website](https://hot-radar-j8vzdjdlheu.qoder.website)。
 
 - **Qoder Sites** —— 直接发布 `dist/` 目录(免费版仅支持静态部署,本项目正是为此设计);
 - **Vercel / Netlify / Cloudflare Pages** —— 按框架预设 Vite 自动识别,零配置;
@@ -113,6 +116,10 @@ src/
 - 微博/B站等平台官方接口不允许浏览器跨域,本项目通过开源聚合接口间接获取,单条源失效不影响其他源(自动降级 + 快照兜底);
 - 监控是"打开页面时"的拉取式扫描,不是 7×24 后台爬虫 —— 需要无人值守监控的话可参考快照工作流自行扩展定时任务;
 - 第三方免费接口存在限流或停服的可能,「设置 → 数据源体检」可随时检查各源健康状态。
+
+## 更新日志
+
+版本变更记录见 [CHANGELOG.md](CHANGELOG.md),各版本详细说明见 [Releases](https://github.com/rwzdk/hot-radar/releases)。
 
 ## License
 
