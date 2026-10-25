@@ -11,3 +11,6 @@ yarn-error.log*
 .vscode/*
 !.vscode/extensions.json
 .idea
+
+# 构建产物
+*.tsbuildinfo
