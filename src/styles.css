@@ -1,0 +1,90 @@
+@import 'tailwindcss';
+
+@theme {
+  /* 纸感底色 */
+  --color-paper: #f6f5f1;
+  --color-surface: #ffffff;
+  --color-line: #e7e4dc;
+
+  /* 墨色文字 */
+  --color-ink: #191713;
+  --color-ink-soft: #4a463c;
+  --color-muted: #87816f;
+
+  /* 品牌朱红 */
+  --color-accent: #d8452a;
+  --color-accent-deep: #b23420;
+  --color-accent-soft: #fbeae5;
+
+  /* 语义色 */
+  --color-ok: #2f7d4f;
+  --color-warn: #b97d10;
+  --color-danger: #c23a2a;
+
+  /* 侧边栏墨板 */
+  --color-panel: #17150f;
+  --color-panel-soft: #26231b;
+  --color-panel-line: #353124;
+  --color-panel-ink: #f3f1ea;
+  --color-panel-muted: #9a9481;
+
+  --font-sans:
+    system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+  --font-mono:
+    ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, 'Noto Sans Mono CJK SC',
+    monospace;
+
+  --radius-card: 14px;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+  ::selection {
+    background-color: color-mix(in srgb, var(--color-accent) 22%, transparent);
+  }
+  /* 通知面板滚动条 */
+  .overflow-y-auto::-webkit-scrollbar {
+    width: 6px;
+  }
+  .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: var(--color-line);
+    border-radius: 3px;
+  }
+}
+
+/* 列表入场动画 */
+@utility animate-rise {
+  animation: rise 0.35s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* 加载骨架 */
+@utility skeleton {
+  display: inline-block;
+  border-radius: 6px;
+  background: linear-gradient(100deg, #edeae3 40%, #f7f6f1 50%, #edeae3 60%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s linear infinite;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
