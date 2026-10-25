@@ -1,0 +1,37 @@
+name: 每日热榜快照
+
+on:
+  schedule:
+    # UTC 每天 01:30(北京时间 09:30)
+    - cron: '30 1 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取仓库
+        uses: actions/checkout@v4
+
+      - name: 安装 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 抓取各平台热榜快照
+        run: node scripts/snapshot.mjs
+
+      - name: 提交快照
+        run: |
+          if git diff --quiet public/data/snapshot.json; then
+            echo "快照无变化,跳过提交"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/snapshot.json
+          git commit -m "chore(data): 更新每日热榜快照 $(date -u +%F)"
+          git push
