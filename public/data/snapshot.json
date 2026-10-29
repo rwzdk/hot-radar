@@ -1,11 +1,11 @@
 {
-  "generatedAt": 1793295574393,
+  "generatedAt": 1793295898480,
   "boardAt": {
     "weibo": 1792938978573,
     "zhihu": 1792938978573,
     "douyin": 1792938978573,
     "toutiao": 1792938978573,
-    "hackernews": 1793295574393
+    "hackernews": 1793295898480
   },
   "boards": {
     "weibo": [
@@ -1412,7 +1412,7 @@
         "url": "https://nullpt.rs/fingerprinting-bioweapons",
         "heat": 1503,
         "heatLabel": "1503 分",
-        "extra": "281 评论 · @hazebooth",
+        "extra": "282 评论 · @hazebooth",
         "source": "hackernews"
       },
       {
@@ -1420,15 +1420,15 @@
         "url": "https://data.stackexchange.com/stackoverflow/query/1926661#graph?t=1",
         "heat": 718,
         "heatLabel": "718 分",
-        "extra": "624 评论 · @babelfish",
+        "extra": "625 评论 · @babelfish",
         "source": "hackernews"
       },
       {
         "title": "We're releasing the weights of Mistral Large 4",
         "url": "https://mistral.ai/news/mistral-large-4-oss/",
-        "heat": 668,
-        "heatLabel": "668 分",
-        "extra": "169 评论 · @kuberwastaken",
+        "heat": 673,
+        "heatLabel": "673 分",
+        "extra": "171 评论 · @kuberwastaken",
         "source": "hackernews"
       },
       {
@@ -1450,16 +1450,16 @@
       {
         "title": "DoorDash to acquire Instacart",
         "url": "https://about.doordash.com/en-us/news/doordash-to-acquire-instacart",
-        "heat": 233,
-        "heatLabel": "233 分",
+        "heat": 234,
+        "heatLabel": "234 分",
         "extra": "428 评论 · @WalterSobchak",
         "source": "hackernews"
       },
       {
         "title": "How Google determines the names for bodies of water in Google Earth (2008)",
         "url": "https://publicpolicy.googleblog.com/2008/04/how-google-determines-names-for-bodies.html",
-        "heat": 181,
-        "heatLabel": "181 分",
+        "heat": 182,
+        "heatLabel": "182 分",
         "extra": "146 评论 · @terminalbraid",
         "source": "hackernews"
       },
@@ -1482,49 +1482,49 @@
       {
         "title": "Mexico is a showroom for electric vehicles you can't buy in the U.S.",
         "url": "https://www.washingtonpost.com/climate-environment/2026/10/27/i-saw-future-driving-mexico-its-off-limits-americans/",
-        "heat": 156,
-        "heatLabel": "156 分",
-        "extra": "142 评论 · @bookofjoe",
-        "source": "hackernews"
-      },
-      {
-        "title": "If IPv4 were land",
-        "url": "https://iptrust.co/blog/if-ipv4-were-land",
-        "heat": 149,
-        "heatLabel": "149 分",
-        "extra": "151 评论 · @rokostik",
+        "heat": 157,
+        "heatLabel": "157 分",
+        "extra": "144 评论 · @bookofjoe",
         "source": "hackernews"
       },
       {
         "title": "For the first time ever, Google Search is less than 50% of Alphabet's revenue",
         "url": "https://www.kadoa.com/companies/insights/google-search-below-half",
-        "heat": 147,
-        "heatLabel": "147 分",
-        "extra": "92 评论 · @hubraumhugo",
+        "heat": 153,
+        "heatLabel": "153 分",
+        "extra": "98 评论 · @hubraumhugo",
+        "source": "hackernews"
+      },
+      {
+        "title": "If IPv4 were land",
+        "url": "https://iptrust.co/blog/if-ipv4-were-land",
+        "heat": 150,
+        "heatLabel": "150 分",
+        "extra": "156 评论 · @rokostik",
         "source": "hackernews"
       },
       {
         "title": "If-then-else had to be invented (2020)",
         "url": "https://github.com/e-n-f/if-then-else/blob/master/if-then-else.md",
-        "heat": 121,
-        "heatLabel": "121 分",
+        "heat": 123,
+        "heatLabel": "123 分",
         "extra": "141 评论 · @theanonymousone",
         "source": "hackernews"
       },
       {
         "title": "H.264 Is Magic (2016)",
         "url": "https://sidbala.com/h-264-is-magic/",
-        "heat": 113,
-        "heatLabel": "113 分",
-        "extra": "51 评论 · @ea016",
+        "heat": 115,
+        "heatLabel": "115 分",
+        "extra": "52 评论 · @ea016",
         "source": "hackernews"
       },
       {
         "title": "NetBSD adds a new text editor called atto",
         "url": "https://mastodon.sdf.org/@netbsd/117518160563539748",
-        "heat": 108,
-        "heatLabel": "108 分",
-        "extra": "94 评论 · @luke8086",
+        "heat": 109,
+        "heatLabel": "109 分",
+        "extra": "95 评论 · @luke8086",
         "source": "hackernews"
       },
       {
@@ -1546,8 +1546,8 @@
       {
         "title": "Java's new AOT cache feature is in a rough state",
         "url": "https://xpipe.io/blog/java-aot-cache",
-        "heat": 68,
-        "heatLabel": "68 分",
+        "heat": 69,
+        "heatLabel": "69 分",
         "extra": "21 评论 · @theanonymousone",
         "source": "hackernews"
       },
@@ -1556,22 +1556,22 @@
         "url": "https://borretti.me/article/we-wont-just-hang-out",
         "heat": 67,
         "heatLabel": "67 分",
-        "extra": "118 评论 · @barry-cotter",
+        "extra": "121 评论 · @barry-cotter",
         "source": "hackernews"
       },
       {
         "title": "LLM Voice",
         "url": "https://martinfowler.com/bliki/LLM-Voice.html",
-        "heat": 61,
-        "heatLabel": "61 分",
-        "extra": "18 评论 · @ibobev",
+        "heat": 65,
+        "heatLabel": "65 分",
+        "extra": "21 评论 · @ibobev",
         "source": "hackernews"
       },
       {
         "title": "Grace Blackwell needs a new scheduler: 27% more usable GPUs from the same racks",
         "url": "https://skypilot.ai/blog/grace-blackwell-needs-a-new-scheduler",
-        "heat": 50,
-        "heatLabel": "50 分",
+        "heat": 51,
+        "heatLabel": "51 分",
         "extra": "4 评论 · @wondersky",
         "source": "hackernews"
       },
@@ -1580,7 +1580,7 @@
         "url": "https://www.bbc.com/news/articles/cm8xz7pkd0jjo",
         "heat": 47,
         "heatLabel": "47 分",
-        "extra": "95 评论 · @ZeljkoS",
+        "extra": "99 评论 · @ZeljkoS",
         "source": "hackernews"
       },
       {
@@ -1592,27 +1592,27 @@
         "source": "hackernews"
       },
       {
-        "title": "noalloc: Tooling and libraries to enforce zero heap allocations in Golang",
-        "url": "https://github.com/theconsensuslabs/noalloc",
-        "heat": 26,
-        "heatLabel": "26 分",
-        "extra": "1 评论 · @g0xA52A2A",
+        "title": "Tomas Mikolov (creator of Word2Vec) receives the Medal of Merit",
+        "url": "https://www.vut.cz/en/but/news-f19528/two-but-graduates-received-state-honors-from-the-president-of-the-republic-d378468",
+        "heat": 27,
+        "heatLabel": "27 分",
+        "extra": "3 评论 · @armcat",
         "source": "hackernews"
       },
       {
-        "title": "Tomas Mikolov (creator of Word2Vec) receives the Medal of Merit",
-        "url": "https://www.vut.cz/en/but/news-f19528/two-but-graduates-received-state-honors-from-the-president-of-the-republic-d378468",
-        "heat": 23,
-        "heatLabel": "23 分",
-        "extra": "2 评论 · @armcat",
+        "title": "noalloc: Tooling and libraries to enforce zero heap allocations in Golang",
+        "url": "https://github.com/theconsensuslabs/noalloc",
+        "heat": 27,
+        "heatLabel": "27 分",
+        "extra": "2 评论 · @g0xA52A2A",
         "source": "hackernews"
       },
       {
         "title": "Toxic Experts",
         "url": "https://nedbatchelder.com/blog/201711/toxic_experts",
-        "heat": 20,
-        "heatLabel": "20 分",
-        "extra": "6 评论 · @luu",
+        "heat": 21,
+        "heatLabel": "21 分",
+        "extra": "7 评论 · @luu",
         "source": "hackernews"
       },
       {
