@@ -4,10 +4,9 @@ import type {
   BoardId,
   Importance,
   Keyword,
-  Settings,
   WatchResult,
 } from '../types';
-import { DEFAULT_SETTINGS, IMPORTANCE_ORDER, combinedExclude } from '../types';
+import { IMPORTANCE_ORDER, combinedExclude } from '../types';
 import { BOARDS } from '../lib/boards';
 import {
   scanKeyword,
@@ -22,6 +21,7 @@ import {
   saveJson,
   uid,
   useLocalState,
+  useSettings,
   watchKey,
   removeKey,
 } from '../lib/storage';
@@ -158,7 +158,7 @@ function KeywordPanel({
   const [results, setResults] = useLocalState<WatchResult[]>(watchKey(kw.id), []);
   const resultsRef = useRef(results);
   resultsRef.current = results;
-  const [settings] = useLocalState<Settings>('settings', DEFAULT_SETTINGS);
+  const [settings] = useSettings();
   const [digest, setDigest] = useLocalState<AiDigest | null>(`digest:${kw.id}`, null);
   const { push } = useNotices();
 
@@ -591,7 +591,7 @@ export default function MonitorPage({
   navigate: (to: string) => void;
 }) {
   const [keywords, setKeywords] = useLocalState<Keyword[]>('keywords', []);
-  const [settings] = useLocalState<Settings>('settings', DEFAULT_SETTINGS);
+  const [settings] = useSettings();
   const { push } = useNotices();
   const [draft, setDraft] = useState('');
   const [counts, setCounts] = useState<Record<string, number>>({});

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { BoardId, Settings } from '../types';
-import { DEFAULT_SETTINGS } from '../types';
+import type { BoardId } from '../types';
 import {
   BOARDS,
   boardMeta,
@@ -13,7 +12,7 @@ import {
 } from '../lib/boards';
 import { matchesExclude } from '../lib/aggregate';
 import { relativeTime } from '../lib/format';
-import { useLocalState } from '../lib/storage';
+import { useSettings } from '../lib/storage';
 import { Badge, Button, Card, EmptyState, HeatBar, Spinner } from '../components/ui';
 import { ExternalIcon, FlameIcon, RefreshIcon } from '../components/icons';
 
@@ -200,7 +199,7 @@ function AggregateView() {
     return seed;
   });
   const [loading, setLoading] = useState(false);
-  const [settings] = useLocalState<Settings>('settings', DEFAULT_SETTINGS);
+  const [settings] = useSettings();
   const exclude = settings.globalExclude;
 
   const load = useCallback(async (force = false) => {
@@ -325,7 +324,7 @@ export default function BoardsPage() {
   const [active, setActive] = useState<BoardTab>('all');
   const [snap, setSnap] = useState<SnapshotFile | null>(null);
   const [onlyNew, setOnlyNew] = useState(false);
-  const [settings] = useLocalState<Settings>('settings', DEFAULT_SETTINGS);
+  const [settings] = useSettings();
   // 聚合页在后台用第一个榜预热 useBoard,切到单榜即秒开
   const activeBoard: BoardId = active === 'all' ? 'weibo' : active;
   const { state, loading, reload } = useBoard(activeBoard);

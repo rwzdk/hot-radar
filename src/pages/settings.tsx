@@ -1,9 +1,8 @@
 import { useRef, useState } from 'react';
 import type { Settings } from '../types';
-import { DEFAULT_SETTINGS } from '../types';
 import { BOARDS, fetchBoard } from '../lib/boards';
 import { testApiKey } from '../lib/ai';
-import { clearAll, downloadFile, exportAll, importAll, useLocalState } from '../lib/storage';
+import { clearAll, downloadFile, exportAll, importAll, useSettings } from '../lib/storage';
 import { Button, Card, Input, SectionTitle, Spinner, Toggle } from '../components/ui';
 import {
   BellIcon,
@@ -384,7 +383,7 @@ function SettingsSourcesCard() {
 }
 
 export default function SettingsPage() {
-  const [settings, setSettings] = useLocalState<Settings>('settings', DEFAULT_SETTINGS);
+  const [settings, setSettings] = useSettings();
 
   return (
     <div className="mx-auto max-w-3xl animate-rise space-y-4">

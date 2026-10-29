@@ -385,3 +385,9 @@ export function useReload(callback: () => void) {
     return () => window.removeEventListener('storage', onStorage);
   }, [reload]);
 }
+
+/** 读取设置并合并默认值,保证旧版本 localStorage 数据缺少新字段时不崩溃 */
+export function useSettings() {
+  const [value, setValue] = useLocalState<Settings>('settings', DEFAULT_SETTINGS);
+  return [{ ...DEFAULT_SETTINGS, ...value }, setValue] as const;
+}

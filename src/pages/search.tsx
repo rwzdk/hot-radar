@@ -1,10 +1,9 @@
 import { useMemo, useState } from 'react';
-import type { BoardId, Settings, WatchResult } from '../types';
-import { DEFAULT_SETTINGS } from '../types';
+import type { BoardId, WatchResult } from '../types';
 import { BOARDS } from '../lib/boards';
 import { scanKeyword, type ScanOutcome } from '../lib/aggregate';
 import { analyzeBatch, analyzeItem } from '../lib/ai';
-import { useLocalState } from '../lib/storage';
+import { useLocalState, useSettings } from '../lib/storage';
 import { Badge, Button, Card, EmptyState, SectionTitle, Spinner } from '../components/ui';
 import { ResultCard } from '../components/result-card';
 import { SearchIcon, SparkIcon } from '../components/icons';
@@ -16,7 +15,7 @@ export default function SearchPage() {
   const [outcome, setOutcome] = useState<ScanOutcome | null>(null);
   const [searchedFor, setSearchedFor] = useState('');
 
-  const [settings] = useLocalState<Settings>('settings', DEFAULT_SETTINGS);
+  const [settings] = useSettings();
   const [recent, setRecent] = useLocalState<string[]>('search:recent', []);
   const aiReady = Boolean(settings.openrouterKey);
   const [aiBusy, setAiBusy] = useState(false);
