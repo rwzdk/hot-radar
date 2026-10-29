@@ -7,19 +7,25 @@ import type {
   Settings,
   WatchResult,
 } from '../types';
-import { DEFAULT_SETTINGS, IMPORTANCE_ORDER } from '../types';
+import { DEFAULT_SETTINGS, IMPORTANCE_ORDER, combinedExclude } from '../types';
 import { BOARDS } from '../lib/boards';
-import { scanKeyword, mergeHistory, type ScanOutcome } from '../lib/aggregate';
+import {
+  scanKeyword,
+  scanKeywords,
+  mergeHistory,
+  type ScanOutcome,
+} from '../lib/aggregate';
 import { analyzeBatch, analyzeDigest, analyzeItem, type BatchProgress } from '../lib/ai';
 import {
   downloadFile,
   loadWatch,
+  saveJson,
   uid,
   useLocalState,
   watchKey,
   removeKey,
 } from '../lib/storage';
-import { formatDateTime, relativeTime } from '../lib/format';
+import { clockTime, formatDateTime, relativeTime } from '../lib/format';
 import { useNotices, notifyBrowser } from '../lib/notices';
 import {
   Badge,
@@ -226,7 +232,9 @@ function KeywordPanel({
     setAiError('');
     setNewIds(new Set());
     try {
-      const outcome = await scanKeyword(kw.text, { exclude: kw.exclude });
+      const outcome = await scanKeyword(kw.text, {
+        exclude: combinedExclude(kw.exclude, settings),
+      });
       const known = new Set(resultsRef.current.map((item) => item.id));
       const added = outcome.results.filter((item) => !known.has(item.id));
       setResults((prev) => mergeHistory(prev, outcome.results).merged);
@@ -583,12 +591,78 @@ export default function MonitorPage({
   navigate: (to: string) => void;
 }) {
   const [keywords, setKeywords] = useLocalState<Keyword[]>('keywords', []);
+  const [settings] = useLocalState<Settings>('settings', DEFAULT_SETTINGS);
+  const { push } = useNotices();
   const [draft, setDraft] = useState('');
   const [counts, setCounts] = useState<Record<string, number>>({});
+  const [autoScanAt, setAutoScanAt] = useState(0);
+
+  const keywordsRef = useRef(keywords);
+  keywordsRef.current = keywords;
+  const autoScanningRef = useRef(false);
 
   const valid = params.kw && keywords.some((k) => k.id === params.kw);
   const selectedId = valid ? params.kw : keywords[0]?.id;
   const selected = keywords.find((k) => k.id === selectedId);
+
+  /* 页面打开期间的自动扫描:热榜一轮共享拉取,各关键词只做匹配与 HN 搜索 */
+  useEffect(() => {
+    const minutes = settings.autoScanMinutes;
+    if (!minutes) return;
+
+    async function tick() {
+      if (document.visibilityState !== 'visible' || autoScanningRef.current) return;
+      const list = keywordsRef.current.filter((k) => !k.paused);
+      if (list.length === 0) return;
+      autoScanningRef.current = true;
+      try {
+        const outcomes = await scanKeywords(
+          list.map((k) => k.text),
+          {
+            excludes: Object.fromEntries(
+              list.map((k) => [k.text, combinedExclude(k.exclude, settings)]),
+            ),
+          },
+        );
+        const now = Date.now();
+        for (const kw of list) {
+          const outcome = outcomes[kw.text];
+          if (!outcome) continue;
+          const { merged, added } = mergeHistory(loadWatch(kw.id), outcome.results);
+          saveJson(watchKey(kw.id), merged);
+          setKeywords((prev) =>
+            prev.map((k) => (k.id === kw.id ? { ...k, lastScanAt: now } : k)),
+          );
+          if (added.length > 0) {
+            push({
+              title: `「${kw.text}」发现 ${added.length} 条新内容`,
+              body: added
+                .slice(0, 3)
+                .map((a) => a.title.slice(0, 30))
+                .join(' / '),
+              keywordId: kw.id,
+            });
+            notifyBrowser(`热点雷达 · ${kw.text}`, `发现 ${added.length} 条新内容`);
+          }
+        }
+        setAutoScanAt(now);
+      } catch {
+        /* 自动扫描失败静默,等待下个周期 */
+      } finally {
+        autoScanningRef.current = false;
+      }
+    }
+
+    const timer = window.setInterval(() => void tick(), minutes * 60_000);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void tick();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [settings, push, setKeywords]);
 
   function addKeyword() {
     const text = draft.trim();
@@ -710,6 +784,13 @@ export default function MonitorPage({
             })
           )}
         </Card>
+
+        {settings.autoScanMinutes > 0 && keywords.some((k) => !k.paused) && (
+          <p className="px-1 text-[11px] font-bold leading-relaxed text-muted">
+            自动扫描:每 {settings.autoScanMinutes} 分钟
+            {autoScanAt ? ` · 上次 ${clockTime(autoScanAt)}` : ' · 本页打开期间生效'}
+          </p>
+        )}
       </div>
 
       {/* 右侧面板 */}
@@ -727,7 +808,7 @@ export default function MonitorPage({
           <EmptyState
             icon={<TargetIcon className="size-7" />}
             title="选择或创建一个关键词"
-            desc="热点雷达会从微博、知乎、抖音、头条、B站热榜与 HackerNews 中,持续追踪与关键词相关的内容"
+            desc="热点雷达会从各平台热榜与 HackerNews 中,持续追踪与关键词相关的内容"
           />
         </Card>
       )}

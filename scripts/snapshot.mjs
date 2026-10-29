@@ -15,7 +15,17 @@ const API_60S = 'https://60s.viki.moe/v2/';
 const TIMEOUT = 15_000;
 const RETRY_DELAY = 900;
 
-const BOARDS_60S = ['weibo', 'zhihu', 'douyin', 'toutiao', 'bili'];
+/** 各榜单: [榜单 id, 60s API 路径]; HackerNews 走自有逻辑 */
+const BOARD_JOBS = [
+  ['weibo', 'weibo'],
+  ['zhihu', 'zhihu'],
+  ['douyin', 'douyin'],
+  ['toutiao', 'toutiao'],
+  ['baidu', 'baidu/hot'],
+  ['bili', 'bili'],
+  ['tieba', 'baidu/tieba'],
+  ['rednote', 'rednote'],
+];
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -29,6 +39,61 @@ function safeUrl(raw) {
   } catch {
     return undefined;
   }
+}
+
+/** 把 "293万" / "43.2w" 这类热度文案解析回数值 */
+function parseHeatText(text) {
+  if (!text) return undefined;
+  const m = String(text).trim().match(/^([\d.]+)\s*(万|w)?$/i);
+  if (!m) return undefined;
+  const num = Number(m[1]);
+  if (!Number.isFinite(num)) return undefined;
+  return m[2] ? Math.round(num * 10_000) : Math.round(num);
+}
+
+/** 按榜单归一化条目(与 src/lib/boards.ts 的映射保持一致) */
+function normalizeItem(item, id) {
+  const url = safeUrl(item.link ?? item.url);
+  const title = item.title?.trim();
+  if (!url || !title) return null;
+  if (id === 'baidu') {
+    const heat = typeof item.score === 'number' ? item.score : Number(item.score);
+    return {
+      title,
+      url,
+      heat: Number.isFinite(heat) ? heat : undefined,
+      heatLabel: item.score_desc ?? undefined,
+      extra: item.type_desc ?? undefined,
+      cover: safeUrl(item.cover),
+    };
+  }
+  if (id === 'tieba') {
+    const heat = parseHeatText(item.score_desc) ?? parseHeatText(item.score);
+    return {
+      title,
+      url,
+      heat,
+      heatLabel: item.score_desc ?? undefined,
+      cover: safeUrl(item.avatar),
+    };
+  }
+  if (id === 'rednote') {
+    const heat = typeof item.score === 'number' ? item.score : Number(item.score);
+    return {
+      title,
+      url,
+      heat: Number.isFinite(heat) ? heat : undefined,
+      heatLabel: formatHeat(heat),
+    };
+  }
+  return {
+    title,
+    url,
+    heat: typeof item.hot_value === 'number' ? item.hot_value : undefined,
+    heatLabel: item.hot_value_desc ?? formatHeat(item.hot_value),
+    extra: item.answer_cnt != null ? `${item.answer_cnt} 回答` : undefined,
+    cover: safeUrl(item.cover),
+  };
 }
 
 async function getJsonOnce(url) {
@@ -65,26 +130,14 @@ function formatHeat(value) {
   return String(value);
 }
 
-async function fetch60s(path) {
+async function fetch60s(path, id) {
   const json = await getJson(API_60S + path);
   if (json.code !== 200 || !Array.isArray(json.data)) {
     throw new Error(`60s API code=${json.code}`);
   }
   return json.data.flatMap((item) => {
-    const url = safeUrl(item.link);
-    const title = item.title?.trim();
-    if (!url || !title) return [];
-    return [
-      {
-        title,
-        url,
-        heat: typeof item.hot_value === 'number' ? item.hot_value : undefined,
-        heatLabel: item.hot_value_desc ?? formatHeat(item.hot_value),
-        extra: item.answer_cnt != null ? `${item.answer_cnt} 回答` : undefined,
-        cover: safeUrl(item.cover),
-        source: path,
-      },
-    ];
+    const normalized = normalizeItem(item, id);
+    return normalized ? [normalized] : [];
   });
 }
 
@@ -115,7 +168,7 @@ async function loadPrevious() {
 }
 
 const jobs = [
-  ...BOARDS_60S.map((id) => [id, () => fetch60s(id)]),
+  ...BOARD_JOBS.map(([id, path]) => [id, () => fetch60s(path, id)]),
   ['hackernews', fetchHackerNews],
 ];
 

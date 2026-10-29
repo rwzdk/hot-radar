@@ -12,6 +12,7 @@ import {
   DownloadIcon,
   KeyIcon,
   RefreshIcon,
+  TargetIcon,
   UploadIcon,
   XIcon,
 } from '../components/icons';
@@ -172,6 +173,55 @@ function SettingsNotifyCard({ settings, setSettings }: {
         label="发现重要热点时发送系统通知"
       />
       <p className="mt-2 text-xs font-semibold leading-relaxed text-muted">{label}</p>
+    </Card>
+  );
+}
+
+function SettingsScanCard({ settings, setSettings }: {
+  settings: Settings;
+  setSettings: (fn: (s: Settings) => Settings) => void;
+}) {
+  return (
+    <Card className="p-5">
+      <div className="mb-3.5 flex items-center gap-2.5">
+        <HeadIcon bg="bg-accent-soft" rotate="rotate-2">
+          <TargetIcon className="size-5" />
+        </HeadIcon>
+        <h3 className="text-sm font-black">扫描偏好</h3>
+      </div>
+      <div className="space-y-3.5">
+        <div>
+          <span className="mb-1.5 block text-[13px] font-semibold text-ink-soft">自动扫描</span>
+          <select
+            value={String(settings.autoScanMinutes)}
+            onChange={(e) => setSettings((s) => ({ ...s, autoScanMinutes: Number(e.target.value) }))}
+            aria-label="自动扫描间隔"
+            className="h-9 cursor-pointer rounded-btn border-[3px] border-ink bg-surface px-2.5 text-[13px] font-bold text-ink outline-none transition-all duration-100 focus:shadow-toon-sm"
+          >
+            <option value="0">关闭(手动扫描)</option>
+            <option value="5">每 5 分钟</option>
+            <option value="10">每 10 分钟</option>
+            <option value="30">每 30 分钟</option>
+          </select>
+          <p className="mt-1.5 text-xs font-semibold leading-relaxed text-muted">
+            页面打开期间按间隔自动重新扫描全部监控中的关键词;切到后台或无新内容时不打扰。自动扫描只入库和通知,不消耗 AI 额度。
+          </p>
+        </div>
+        <label className="block">
+          <span className="mb-1.5 block text-[13px] font-semibold text-ink-soft">全局排除词</span>
+          <input
+            value={settings.globalExclude}
+            onChange={(e) => setSettings((s) => ({ ...s, globalExclude: e.target.value }))}
+            placeholder="广告,抽奖,引流"
+            aria-label="全局排除词,逗号分隔"
+            title="包含这些词的内容在扫描和榜单展示中被忽略,逗号或空格分隔"
+            className="h-9.5 w-full rounded-btn border-[3px] border-ink bg-surface px-3 text-sm font-bold text-ink outline-none transition-all duration-100 placeholder:font-medium placeholder:text-muted focus:shadow-toon-sm"
+          />
+          <span className="mt-1.5 block text-xs font-semibold leading-relaxed text-muted">
+            叠加在每个关键词自己的排除词之上,监控扫描、全网搜索与榜单展示同时生效。
+          </span>
+        </label>
+      </div>
     </Card>
   );
 }
@@ -338,8 +388,9 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-3xl animate-rise space-y-4">
-      <SectionTitle title="设置" desc="配置 AI 研判、通知与数据备份" />
+      <SectionTitle title="设置" desc="配置 AI 研判、扫描、通知与数据备份" />
       <SettingsAiCard settings={settings} setSettings={setSettings} />
+      <SettingsScanCard settings={settings} setSettings={setSettings} />
       <SettingsNotifyCard settings={settings} setSettings={setSettings} />
       <SettingsDataCard />
       <SettingsSourcesCard />

@@ -17,7 +17,10 @@ export const BOARDS: BoardMeta[] = [
   { id: 'zhihu', name: '知乎', en: 'Zhihu', api: 'zhihu' },
   { id: 'douyin', name: '抖音', en: 'Douyin', api: 'douyin', hasCover: true },
   { id: 'toutiao', name: '今日头条', en: 'Toutiao', api: 'toutiao', hasCover: true },
+  { id: 'baidu', name: '百度', en: 'Baidu', api: 'baidu/hot', hasCover: true },
   { id: 'bili', name: 'B 站', en: 'Bilibili', api: 'bili' },
+  { id: 'tieba', name: '贴吧', en: 'Tieba', api: 'baidu/tieba' },
+  { id: 'rednote', name: '小红书', en: 'Rednote', api: 'rednote' },
   { id: 'hackernews', name: 'Hacker News', en: 'HackerNews' },
 ];
 
@@ -98,6 +101,15 @@ interface Api60sItem {
   cover?: string;
   answer_cnt?: number;
   excerpt?: string;
+  // 百度热搜/贴吧(baidu/hot、baidu/tieba)的字段
+  url?: string;
+  score?: number | string;
+  score_desc?: string;
+  desc?: string;
+  avatar?: string;
+  type_desc?: string;
+  // 小红书(rednote)的字段
+  word_type?: string | number;
 }
 
 interface Api60sResponse {
@@ -105,24 +117,76 @@ interface Api60sResponse {
   data: Api60sItem[] | null;
 }
 
-async function fetchFrom60s(path: string): Promise<BoardItem[]> {
+/** 把 "293万" / "43.2w" 这类热度文案解析回数值,失败返回 undefined */
+function parseHeatText(text?: string): number | undefined {
+  if (!text) return undefined;
+  const m = text.trim().match(/^([\d.]+)\s*(万|w)?$/i);
+  if (!m) return undefined;
+  const num = Number(m[1]);
+  if (!Number.isFinite(num)) return undefined;
+  return m[2] ? Math.round(num * 10_000) : Math.round(num);
+}
+
+function toBoardItem(it: Api60sItem, source: BoardId): BoardItem | null {
+  const url = safeUrl(it.link ?? it.url);
+  const title = it.title?.trim();
+  if (!url || !title) return null;
+  return { title, url, source };
+}
+
+async function fetchFrom60s(path: string, source: BoardId): Promise<BoardItem[]> {
   const json = await getJson<Api60sResponse>(API_60S + path);
   if (json.code !== 200 || !Array.isArray(json.data)) {
     throw new Error(`60s API 返回 code=${json.code}`);
   }
   return json.data.flatMap((it) => {
-    const url = safeUrl(it.link);
-    const title = it.title?.trim();
-    if (!url || !title) return [];
+    const base = toBoardItem(it, source);
+    if (!base) return [];
+
+    if (source === 'baidu') {
+      // 百度热搜:score 为数值热度,score_desc 形如 "4893221",type_desc 是 热/新 标签
+      const heat = typeof it.score === 'number' ? it.score : Number(it.score);
+      return [
+        {
+          ...base,
+          heat: Number.isFinite(heat) ? heat : undefined,
+          heatLabel: it.score_desc ?? formatHeat(heat),
+          extra: it.type_desc ?? undefined,
+          cover: safeUrl(it.cover),
+        },
+      ];
+    }
+    if (source === 'tieba') {
+      // 贴吧热议:score_desc 形如 "293万",无封面用 avatar
+      const heat = parseHeatText(it.score_desc) ?? parseHeatText(String(it.score ?? ''));
+      return [
+        {
+          ...base,
+          heat,
+          heatLabel: it.score_desc ?? formatHeat(heat),
+          cover: safeUrl(it.avatar),
+        },
+      ];
+    }
+    if (source === 'rednote') {
+      // 小红书热点:score 为数值热度,link 是关键词搜索页
+      const heat = typeof it.score === 'number' ? it.score : Number(it.score);
+      return [
+        {
+          ...base,
+          heat: Number.isFinite(heat) ? heat : undefined,
+          heatLabel: formatHeat(heat),
+        },
+      ];
+    }
+    // 微博/知乎/抖音/头条/B站:统一结构
     return [
       {
-        title,
-        url,
+        ...base,
         heat: typeof it.hot_value === 'number' ? it.hot_value : undefined,
         heatLabel: it.hot_value_desc ?? formatHeat(it.hot_value),
         extra: it.answer_cnt != null ? `${it.answer_cnt} 回答` : undefined,
         cover: safeUrl(it.cover),
-        source: 'weibo' as const,
       },
     ];
   });
@@ -172,6 +236,32 @@ function normalizeSnapshot(raw: unknown): SnapshotFile | null {
 
 let snapshotCache: Promise<SnapshotFile | null> | null = null;
 
+/* ---------- 榜单 localStorage 缓存 ----------
+ * 前缀刻意避开应用数据的 hotradar:,不进 exportAll 备份;
+ * 只缓存实时成功结果,快照/失败结果不写缓存。 */
+const BOARD_CACHE_PREFIX = 'hotradar-cache:board:';
+
+export function loadBoardCache(id: BoardId): BoardFetchResult | null {
+  try {
+    const raw = localStorage.getItem(BOARD_CACHE_PREFIX + id);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as BoardFetchResult;
+    if (!parsed || parsed.from !== 'live' || !Array.isArray(parsed.items)) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function saveBoardCache(id: BoardId, result: BoardFetchResult): void {
+  if (result.from !== 'live' || result.items.length === 0) return;
+  try {
+    localStorage.setItem(BOARD_CACHE_PREFIX + id, JSON.stringify(result));
+  } catch {
+    /* 存储满/隐私模式下放弃缓存 */
+  }
+}
+
 /** 读取随仓库构建的每日快照(由 GitHub Actions 生成) */
 export function loadSnapshot(): Promise<SnapshotFile | null> {
   if (!snapshotCache) {
@@ -193,7 +283,9 @@ export async function fetchBoard(id: BoardId): Promise<BoardFetchResult> {
   if (id === 'hackernews') {
     try {
       const now = Date.now();
-      return { items: await hnFrontPage(), from: 'live', fetchedAt: now, loadedAt: now };
+      const result = { items: await hnFrontPage(), from: 'live' as const, fetchedAt: now, loadedAt: now };
+      saveBoardCache(id, result);
+      return result;
     } catch (e) {
       const snap = await fallbackSnapshot(id);
       const now = Date.now();
@@ -201,10 +293,12 @@ export async function fetchBoard(id: BoardId): Promise<BoardFetchResult> {
     }
   }
   try {
-    const items = (await fetchFrom60s(meta.api!)).map((it) => ({ ...it, source: id }));
+    const items = await fetchFrom60s(meta.api!, id);
     if (items.length === 0) throw new Error('空数据');
     const now = Date.now();
-    return { items, from: 'live', fetchedAt: now, loadedAt: now };
+    const result = { items, from: 'live' as const, fetchedAt: now, loadedAt: now };
+    saveBoardCache(id, result);
+    return result;
   } catch (e) {
     const snap = await fallbackSnapshot(id);
     const now = Date.now();

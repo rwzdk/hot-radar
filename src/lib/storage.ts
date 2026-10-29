@@ -14,7 +14,18 @@ import { DEFAULT_SETTINGS } from '../types';
 import { safeUrl } from './url';
 
 const PREFIX = 'hotradar:';
-const BOARD_IDS: BoardId[] = ['weibo', 'zhihu', 'douyin', 'toutiao', 'bili', 'hackernews'];
+const CACHE_PREFIX = 'hotradar-cache:';
+const BOARD_IDS: BoardId[] = [
+  'weibo',
+  'zhihu',
+  'douyin',
+  'toutiao',
+  'baidu',
+  'bili',
+  'tieba',
+  'rednote',
+  'hackernews',
+];
 const IMPORTANCES: Importance[] = ['low', 'medium', 'high', 'urgent'];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -180,6 +191,10 @@ function sanitizeSettings(value: unknown): Settings {
       typeof incoming.browserNotify === 'boolean'
         ? incoming.browserNotify
         : current.browserNotify === true,
+    globalExclude: shortText(incoming.globalExclude, 200) ?? '',
+    autoScanMinutes: [5, 10, 30].includes(finiteNumber(incoming.autoScanMinutes) ?? 0)
+      ? (finiteNumber(incoming.autoScanMinutes) as number)
+      : 0,
   };
 }
 
@@ -196,6 +211,7 @@ export function loadJson<T>(key: string, fallback: T): T {
 export function saveJson(key: string, value: unknown): void {
   try {
     localStorage.setItem(PREFIX + key, JSON.stringify(value));
+    notifyLocalUpdate(key);
   } catch {
     // 存储满了或隐私模式下静默失败
   }
@@ -203,6 +219,18 @@ export function saveJson(key: string, value: unknown): void {
 
 export function removeKey(key: string): void {
   localStorage.removeItem(PREFIX + key);
+  notifyLocalUpdate(key);
+}
+
+/* ---------- 同页数据更新广播 ----------
+ * saveJson/removeKey 后通知本页其他 useLocalState 订阅者重新读取,
+ * 解决"页面级写入(如自动扫描)后组件视图不刷新"的问题。
+ * 订阅方通过 skipPersist 跳过回写,避免 写入→通知→再写入 的死循环。 */
+const LOCAL_UPDATE_EVENT = 'hotradar:local-update';
+
+function notifyLocalUpdate(key: string): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent(LOCAL_UPDATE_EVENT, { detail: { key } }));
 }
 
 /** 触发浏览器下载 */
@@ -246,8 +274,19 @@ export function useLocalState<T>(key: string, initial: T) {
         /* 忽略坏数据 */
       }
     };
+    // 同页广播:其他组件写入同一 key 时重新读取(删除时回落到初始值)
+    const onLocalUpdate = (e: Event) => {
+      const detail = (e as CustomEvent<{ key?: string }>).detail;
+      if (detail?.key !== key) return;
+      skipPersist.current = true;
+      setValue(loadJson(key, initialRef.current));
+    };
     window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
+    window.addEventListener(LOCAL_UPDATE_EVENT, onLocalUpdate);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener(LOCAL_UPDATE_EVENT, onLocalUpdate);
+    };
   }, [key]);
 
   return [value, setValue] as const;
@@ -310,14 +349,17 @@ export function importAll(json: string): boolean {
   }
 }
 
-/** 清空本应用全部数据 */
+/** 清空本应用全部数据(含榜单缓存) */
 export function clearAll(): void {
   const keys: string[] = [];
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
-    if (k?.startsWith(PREFIX)) keys.push(k);
+    if (k?.startsWith(PREFIX) || k?.startsWith(CACHE_PREFIX)) keys.push(k);
   }
   keys.forEach((k) => localStorage.removeItem(k));
+  keys.forEach((k) => {
+    if (k.startsWith(PREFIX)) notifyLocalUpdate(k.slice(PREFIX.length));
+  });
 }
 
 /** 生成短 id */

@@ -258,7 +258,7 @@ export function Shell({
             <GithubIcon className="size-4" />
             GitHub 仓库
           </a>
-          <p className="mt-2 font-mono text-[10px] font-bold text-muted">v1.1.0</p>
+          <p className="mt-2 font-mono text-[10px] font-bold text-muted">v{__APP_VERSION__}</p>
         </div>
       </aside>
 

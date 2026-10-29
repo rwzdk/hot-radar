@@ -1,0 +1,24 @@
+{
+  "name": "热点雷达 HotRadar",
+  "short_name": "热点雷达",
+  "description": "九大平台热榜聚合、关键词监控与 AI 简报,无需服务器,打开即用。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FFF6E9",
+  "theme_color": "#FFF6E9",
+  "icons": [
+    {
+      "src": "./logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

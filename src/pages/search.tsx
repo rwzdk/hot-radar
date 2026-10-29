@@ -37,7 +37,10 @@ export default function SearchPage() {
     setOutcome(null);
     setAiError('');
     try {
-      const result = await scanKeyword(q, { boards });
+      const result = await scanKeyword(q, {
+        boards,
+        exclude: settings.globalExclude || undefined,
+      });
       setOutcome(result);
       setSearchedFor(q);
       setRecent((list) => [q, ...list.filter((item) => item !== q)].slice(0, 6));
@@ -274,7 +277,7 @@ export default function SearchPage() {
           <EmptyState
             icon={<SearchIcon className="size-7" />}
             title="搜一次,看全网"
-            desc="微博 / 知乎 / 抖音 / 头条 / B站热榜关键词匹配 + HackerNews 全文检索"
+            desc="各平台热榜关键词匹配 + HackerNews 全文检索,可按平台筛选"
           />
         </Card>
       )}

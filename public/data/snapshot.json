@@ -1,11 +1,11 @@
 {
-  "generatedAt": 1793292251424,
+  "generatedAt": 1793293675362,
   "boardAt": {
     "weibo": 1792938978573,
     "zhihu": 1792938978573,
     "douyin": 1792938978573,
     "toutiao": 1792938978573,
-    "hackernews": 1793292251424
+    "hackernews": 1793293675362
   },
   "boards": {
     "weibo": [
@@ -1410,241 +1410,241 @@
       {
         "title": "Why is this fingerprinting script creating bioweapons?",
         "url": "https://nullpt.rs/fingerprinting-bioweapons",
-        "heat": 1486,
-        "heatLabel": "1486 分",
-        "extra": "277 评论 · @hazebooth",
+        "heat": 1494,
+        "heatLabel": "1494 分",
+        "extra": "281 评论 · @hazebooth",
         "source": "hackernews"
       },
       {
         "title": "StackOverflow now gets fewer than 1000 questions a month",
         "url": "https://data.stackexchange.com/stackoverflow/query/1926661#graph?t=1",
-        "heat": 699,
-        "heatLabel": "699 分",
-        "extra": "597 评论 · @babelfish",
+        "heat": 707,
+        "heatLabel": "707 分",
+        "extra": "607 评论 · @babelfish",
         "source": "hackernews"
       },
       {
         "title": "Qwenputer: A functioning, deterministic RISC-V CPU inside Qwen3.5",
         "url": "https://divagr.com/blog/qwenputer",
-        "heat": 647,
-        "heatLabel": "647 分",
+        "heat": 656,
+        "heatLabel": "656 分",
         "extra": "136 评论 · @csmantle",
-        "source": "hackernews"
-      },
-      {
-        "title": "CNC Stone Carving",
-        "url": "https://carmelitegothic.com/cnc-stone-carving/",
-        "heat": 514,
-        "heatLabel": "514 分",
-        "extra": "141 评论 · @bschne",
         "source": "hackernews"
       },
       {
         "title": "We're releasing the weights of Mistral Large 4",
         "url": "https://mistral.ai/news/mistral-large-4-oss/",
-        "heat": 502,
-        "heatLabel": "502 分",
-        "extra": "130 评论 · @kuberwastaken",
+        "heat": 582,
+        "heatLabel": "582 分",
+        "extra": "151 评论 · @kuberwastaken",
         "source": "hackernews"
       },
       {
         "title": "‘You Are Done’: The letter sent to King by the F.B.I (2014)",
         "url": "https://www.nytimes.com/2014/11/16/magazine/what-an-uncensored-letter-to-mlk-reveals.html",
-        "heat": 357,
-        "heatLabel": "357 分",
-        "extra": "249 评论 · @surprisetalk",
-        "source": "hackernews"
-      },
-      {
-        "title": "OpenAI's agents talked to each other through the CPU Cache",
-        "url": "https://the-decoder.com/openais-isolated-ai-agents-found-ways-to-talk-to-each-other-through-cpu-cache/",
-        "heat": 338,
-        "heatLabel": "338 分",
-        "extra": "234 评论 · @limbicsystem",
-        "source": "hackernews"
-      },
-      {
-        "title": "A Health Update",
-        "url": "https://furbo.org/2026/10/28/a-health-update/",
-        "heat": 335,
-        "heatLabel": "335 分",
-        "extra": "54 评论 · @frizlab",
+        "heat": 370,
+        "heatLabel": "370 分",
+        "extra": "265 评论 · @surprisetalk",
         "source": "hackernews"
       },
       {
         "title": "Gemini 4 Carbon is the new #1 on the Artificial Analysis Intelligence Index v5",
         "url": "https://artificialanalysis.ai/articles/gemini-4-carbon-new-number-1",
-        "heat": 276,
-        "heatLabel": "276 分",
-        "extra": "213 评论 · @theHocineSaad",
+        "heat": 295,
+        "heatLabel": "295 分",
+        "extra": "223 评论 · @theHocineSaad",
         "source": "hackernews"
       },
       {
         "title": "Zero click, silent, remote Android DoS",
         "url": "https://smsofdeath.com/",
-        "heat": 258,
-        "heatLabel": "258 分",
-        "extra": "141 评论 · @MarkBlah",
-        "source": "hackernews"
-      },
-      {
-        "title": "GitLab Security Incident: Attempted Exploitation of CVE-2026-97229",
-        "url": "https://alpinelinux.org/posts/GitLab-security-incident-CVE-2026-97229.html",
-        "heat": 237,
-        "heatLabel": "237 分",
-        "extra": "111 评论 · @sashk",
+        "heat": 268,
+        "heatLabel": "268 分",
+        "extra": "146 评论 · @MarkBlah",
         "source": "hackernews"
       },
       {
         "title": "The US added a record 20.2 GWh of battery storage in just 3 months",
         "url": "https://electrek.co/2026/08/31/the-us-added-a-record-20-2-gwh-of-battery-storage-in-just-3-months/",
-        "heat": 227,
-        "heatLabel": "227 分",
-        "extra": "147 评论 · @ljf",
-        "source": "hackernews"
-      },
-      {
-        "title": "Forging a Microsoft Edge Full Chain with Logic Bugs Only",
-        "url": "https://blog.orange.tw/posts/2026-10-the-last-proof-of-human-craft-browser-full-chain/",
-        "heat": 205,
-        "heatLabel": "205 分",
-        "extra": "35 评论 · @austinallegro",
+        "heat": 240,
+        "heatLabel": "240 分",
+        "extra": "153 评论 · @ljf",
         "source": "hackernews"
       },
       {
         "title": "Hackers expose the identities of more than 40k DHS employees",
         "url": "https://text.npr.org/nx-s1-6021497",
-        "heat": 197,
-        "heatLabel": "197 分",
-        "extra": "44 评论 · @firefax",
+        "heat": 214,
+        "heatLabel": "214 分",
+        "extra": "49 评论 · @firefax",
         "source": "hackernews"
       },
       {
-        "title": "DoorDash to Acquire Instacart",
+        "title": "Forging a Microsoft Edge Full Chain with Logic Bugs Only",
+        "url": "https://blog.orange.tw/posts/2026-10-the-last-proof-of-human-craft-browser-full-chain/",
+        "heat": 210,
+        "heatLabel": "210 分",
+        "extra": "35 评论 · @austinallegro",
+        "source": "hackernews"
+      },
+      {
+        "title": "DoorDash to acquire Instacart",
         "url": "https://about.doordash.com/en-us/news/doordash-to-acquire-instacart",
-        "heat": 190,
-        "heatLabel": "190 分",
-        "extra": "333 评论 · @WalterSobchak",
+        "heat": 206,
+        "heatLabel": "206 分",
+        "extra": "383 评论 · @WalterSobchak",
         "source": "hackernews"
       },
       {
         "title": "How Google determines the names for bodies of water in Google Earth",
         "url": "https://publicpolicy.googleblog.com/2008/04/how-google-determines-names-for-bodies.html",
-        "heat": 163,
-        "heatLabel": "163 分",
-        "extra": "129 评论 · @terminalbraid",
-        "source": "hackernews"
-      },
-      {
-        "title": "Getting debug access on a Brother printer over Telnet",
-        "url": "https://inventor7777.github.io/blog/2026/10/22/debug-access-on-brother/",
-        "heat": 146,
-        "heatLabel": "146 分",
-        "extra": "46 评论 · @inventor7777",
+        "heat": 166,
+        "heatLabel": "166 分",
+        "extra": "133 评论 · @terminalbraid",
         "source": "hackernews"
       },
       {
         "title": "Chained PHP2Shell Exploit Roots 25 Servers, Including US Government Servers",
         "url": "https://dreamgroup.com/blog/chained-php2shell-exploit-roots-25-servers",
-        "heat": 142,
-        "heatLabel": "142 分",
-        "extra": "64 评论 · @882542F3884314B",
+        "heat": 158,
+        "heatLabel": "158 分",
+        "extra": "69 评论 · @882542F3884314B",
         "source": "hackernews"
       },
       {
-        "title": "MiniLake Is a Local Databricks API Emulator with SQL, Delta Lake and Spark",
-        "url": "https://dmux.github.io/minilake/",
-        "heat": 83,
-        "heatLabel": "83 分",
-        "extra": "17 评论 · @kermatt",
+        "title": "Getting debug access on a Brother printer over Telnet",
+        "url": "https://inventor7777.github.io/blog/2026/10/22/debug-access-on-brother/",
+        "heat": 153,
+        "heatLabel": "153 分",
+        "extra": "47 评论 · @inventor7777",
         "source": "hackernews"
       },
       {
         "title": "Mexico is a showroom for electric vehicles you can't buy in the U.S.",
         "url": "https://www.washingtonpost.com/climate-environment/2026/10/27/i-saw-future-driving-mexico-its-off-limits-americans/",
-        "heat": 62,
-        "heatLabel": "62 分",
-        "extra": "28 评论 · @bookofjoe",
+        "heat": 115,
+        "heatLabel": "115 分",
+        "extra": "80 评论 · @bookofjoe",
         "source": "hackernews"
       },
       {
-        "title": "Zombie stats: Where the numbers AI quotes come from",
-        "url": "https://trakkr.ai/trakkr-research/zombie-stats",
-        "heat": 54,
-        "heatLabel": "54 分",
-        "extra": "17 评论 · @mektrik",
-        "source": "hackernews"
-      },
-      {
-        "title": "Java's new AOT cache feature is in a rough state",
-        "url": "https://xpipe.io/blog/java-aot-cache",
-        "heat": 54,
-        "heatLabel": "54 分",
-        "extra": "17 评论 · @theanonymousone",
+        "title": "MiniLake Is a Local Databricks API Emulator with SQL, Delta Lake and Spark",
+        "url": "https://dmux.github.io/minilake/",
+        "heat": 84,
+        "heatLabel": "84 分",
+        "extra": "19 评论 · @kermatt",
         "source": "hackernews"
       },
       {
         "title": "H.264 Is Magic (2016)",
         "url": "https://sidbala.com/h-264-is-magic/",
-        "heat": 53,
-        "heatLabel": "53 分",
-        "extra": "17 评论 · @ea016",
+        "heat": 82,
+        "heatLabel": "82 分",
+        "extra": "34 评论 · @ea016",
         "source": "hackernews"
       },
       {
-        "title": "Southern Africa's first known stenciled rock art found hiding in plain sight",
-        "url": "https://phys.org/news/2026-10-southern-africa-stenciled-art-plain.html",
-        "heat": 34,
-        "heatLabel": "34 分",
-        "extra": "7 评论 · @wglb",
+        "title": "Zombie stats: Where the numbers AI quotes come from",
+        "url": "https://trakkr.ai/trakkr-research/zombie-stats",
+        "heat": 68,
+        "heatLabel": "68 分",
+        "extra": "31 评论 · @mektrik",
+        "source": "hackernews"
+      },
+      {
+        "title": "Java's new AOT cache feature is in a rough state",
+        "url": "https://xpipe.io/blog/java-aot-cache",
+        "heat": 64,
+        "heatLabel": "64 分",
+        "extra": "18 评论 · @theanonymousone",
+        "source": "hackernews"
+      },
+      {
+        "title": "For the first time ever, Google Search is less than 50% of Alphabet's revenue",
+        "url": "https://www.kadoa.com/companies/insights/google-search-below-half",
+        "heat": 61,
+        "heatLabel": "61 分",
+        "extra": "22 评论 · @hubraumhugo",
         "source": "hackernews"
       },
       {
         "title": "Grace Blackwell needs a new scheduler: 27% more usable GPUs from the same racks",
         "url": "https://skypilot.ai/blog/grace-blackwell-needs-a-new-scheduler",
-        "heat": 24,
-        "heatLabel": "24 分",
-        "extra": "0 评论 · @wondersky",
+        "heat": 40,
+        "heatLabel": "40 分",
+        "extra": "2 评论 · @wondersky",
+        "source": "hackernews"
+      },
+      {
+        "title": "Southern Africa's first known stenciled rock art found hiding in plain sight",
+        "url": "https://phys.org/news/2026-10-southern-africa-stenciled-art-plain.html",
+        "heat": 35,
+        "heatLabel": "35 分",
+        "extra": "7 评论 · @wglb",
         "source": "hackernews"
       },
       {
         "title": "Keplearn: Extract Equations from Data in Seconds",
         "url": "https://github.com/owls-on-wires/keplearn",
-        "heat": 23,
-        "heatLabel": "23 分",
+        "heat": 33,
+        "heatLabel": "33 分",
         "extra": "1 评论 · @owls-on-wires",
-        "source": "hackernews"
-      },
-      {
-        "title": "Launch HN: Simantic (YC F26) – Firmware Simulation for AI Agents",
-        "url": "https://news.ycombinator.com/item?id=50291116",
-        "heat": 8,
-        "heatLabel": "8 分",
-        "extra": "6 评论 · @shong0504",
         "source": "hackernews"
       },
       {
         "title": "LLM Voice",
         "url": "https://martinfowler.com/bliki/LLM-Voice.html",
-        "heat": 7,
-        "heatLabel": "7 分",
-        "extra": "0 评论 · @ibobev",
+        "heat": 25,
+        "heatLabel": "25 分",
+        "extra": "4 评论 · @ibobev",
+        "source": "hackernews"
+      },
+      {
+        "title": "Launch HN: Simantic (YC F26) – Firmware Simulation for AI Agents",
+        "url": "https://news.ycombinator.com/item?id=50291116",
+        "heat": 14,
+        "heatLabel": "14 分",
+        "extra": "8 评论 · @shong0504",
         "source": "hackernews"
       },
       {
         "title": "noalloc: Tooling and libraries to enforce zero heap allocations in Golang",
         "url": "https://github.com/theconsensuslabs/noalloc",
-        "heat": 7,
-        "heatLabel": "7 分",
-        "extra": "0 评论 · @g0xA52A2A",
+        "heat": 14,
+        "heatLabel": "14 分",
+        "extra": "1 评论 · @g0xA52A2A",
         "source": "hackernews"
       },
       {
         "title": "Newly discovered Kerberos delegation abuse path",
         "url": "https://hunio.org/security/abusing-constrained-delegation-without-protocol-transition-against-spn-less-accounts/",
-        "heat": 6,
-        "heatLabel": "6 分",
+        "heat": 10,
+        "heatLabel": "10 分",
         "extra": "1 评论 · @hunio",
+        "source": "hackernews"
+      },
+      {
+        "title": "16colo.rs – ANSI/ASCII art archive",
+        "url": "https://16colo.rs/",
+        "heat": 7,
+        "heatLabel": "7 分",
+        "extra": "0 评论 · @memalign",
+        "source": "hackernews"
+      },
+      {
+        "title": "Everything Rhymes with Porcelain",
+        "url": "https://worksinprogress.co/issue/everything-rhymes-with-porcelain/",
+        "heat": 5,
+        "heatLabel": "5 分",
+        "extra": "1 评论 · @cromulent",
+        "source": "hackernews"
+      },
+      {
+        "title": "Toxic Experts",
+        "url": "https://nedbatchelder.com/blog/201711/toxic_experts",
+        "heat": 4,
+        "heatLabel": "4 分",
+        "extra": "0 评论 · @luu",
         "source": "hackernews"
       }
     ]

@@ -106,13 +106,16 @@ export function Badge({
   children,
   tone = 'neutral',
   className = '',
+  title,
 }: {
   children: ReactNode;
   tone?: Tone;
   className?: string;
+  title?: string;
 }) {
   return (
     <span
+      title={title}
       className={`inline-flex items-center gap-1 rounded-full border-toon-sm px-2 py-px text-[10px] font-black leading-4 ${TONE_CLS[tone]} ${className}`}
     >
       {children}
@@ -127,7 +130,10 @@ const SOURCE_TONE: Record<BoardId, Tone> = {
   zhihu: 'blue',
   douyin: 'ink',
   toutiao: 'warn',
+  baidu: 'warn',
   bili: 'ok',
+  tieba: 'blue',
+  rednote: 'danger',
   hackernews: 'neutral',
 };
 

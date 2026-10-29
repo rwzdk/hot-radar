@@ -1,5 +1,14 @@
 /** 热榜平台标识 */
-export type BoardId = 'weibo' | 'zhihu' | 'douyin' | 'toutiao' | 'bili' | 'hackernews';
+export type BoardId =
+  | 'weibo'
+  | 'zhihu'
+  | 'douyin'
+  | 'toutiao'
+  | 'baidu'
+  | 'bili'
+  | 'tieba'
+  | 'rednote'
+  | 'hackernews';
 
 /** 热榜条目(榜单页展示) */
 export interface BoardItem {

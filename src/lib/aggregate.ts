@@ -1,5 +1,5 @@
 import type { BoardId, WatchResult } from '../types';
-import { fetchBoards } from './boards';
+import { BOARDS, fetchBoards } from './boards';
 import { hnSearch } from './hackernews';
 
 /** 把关键词拆成可用于匹配的词元(小写、去停用) */
@@ -48,7 +48,7 @@ export async function scanKeyword(keyword: string, opts: ScanOptions = {}): Prom
   const terms = splitTerms(keyword);
   const excludeTerms = opts.exclude?.trim() ? splitTerms(opts.exclude) : [];
   const hit = (text: string) => matches(text, terms) && !matches(text, excludeTerms);
-  const boardIds = opts.boards ?? ['weibo', 'zhihu', 'douyin', 'toutiao', 'bili', 'hackernews'];
+  const boardIds = opts.boards ?? BOARDS.map((b) => b.id);
 
   const [boardResults, hnResults] = await Promise.all([
     fetchBoards(boardIds.filter((id) => id !== 'hackernews')),
@@ -132,4 +132,92 @@ export function mergeHistory(
   const merged = [...byId.values()].sort((a, b) => (b.heat ?? 0) - (a.heat ?? 0));
   // 历史最多保留 200 条,控制多关键词场景下的 localStorage 体积
   return { merged: merged.slice(0, 200), added };
+}
+
+export interface BatchScanOptions {
+  /** 参与扫描的热榜平台 */
+  boards?: BoardId[];
+  /** HN 搜索拉取条数 */
+  hnLimit?: number;
+  /** 每个关键词各自的排除词,按关键词文本索引 */
+  excludes?: Record<string, string | undefined>;
+}
+
+/**
+ * 批量扫描多个关键词:热榜只拉取一次全量共享,HN 按关键词各自搜索。
+ * 自动轮询多个关键词时用它替代逐个 scanKeyword,把请求数从 N×源 降到 源+N。
+ */
+export async function scanKeywords(
+  texts: string[],
+  opts: BatchScanOptions = {},
+): Promise<Record<string, ScanOutcome>> {
+  const boardIds = opts.boards ?? BOARDS.map((b) => b.id);
+  const [boardResults, hnLists] = await Promise.all([
+    fetchBoards(boardIds.filter((id) => id !== 'hackernews')),
+    Promise.all(
+      boardIds.includes('hackernews')
+        ? texts.map((text) =>
+            hnSearch(text, { byDate: true, withinDays: 7, limit: opts.hnLimit ?? 15 }).catch(
+              () => [] as WatchResult[],
+            ),
+          )
+        : texts.map(() => Promise.resolve([] as WatchResult[])),
+    ),
+  ]);
+
+  const outcomes: Record<string, ScanOutcome> = {};
+  texts.forEach((text, index) => {
+    const terms = splitTerms(text);
+    const excludeTerms = opts.excludes?.[text]?.trim() ? splitTerms(opts.excludes[text]!) : [];
+    const hit = (value: string) => matches(value, terms) && !matches(value, excludeTerms);
+
+    const sourceStats: ScanOutcome['sourceStats'] = [];
+    const results: WatchResult[] = [];
+
+    for (const [id, fetched] of Object.entries(boardResults)) {
+      const matched = fetched.items
+        .filter((it) => hit(`${it.title} ${it.extra ?? ''}`))
+        .map<WatchResult>((it) => ({
+          id: it.url,
+          title: it.title,
+          url: it.url,
+          source: id as BoardId,
+          heat: it.heat,
+          heatLabel: it.heatLabel,
+          foundAt: Date.now(),
+        }));
+      sourceStats.push({
+        source: id,
+        total: fetched.items.length,
+        matched: matched.length,
+        ok: fetched.items.length > 0,
+      });
+      results.push(...matched);
+    }
+
+    if (boardIds.includes('hackernews')) {
+      const hnResults = hnLists[index] ?? [];
+      const hnMatched = hnResults.filter(
+        (r) => !matches(`${r.title} ${r.content ?? ''}`, excludeTerms),
+      );
+      sourceStats.push({
+        source: 'hackernews',
+        total: hnResults.length,
+        matched: hnMatched.length,
+        ok: true,
+      });
+      results.push(...hnMatched);
+    }
+
+    const seen = new Set<string>();
+    const unique = results.filter((r) => {
+      if (!r.url || seen.has(r.url)) return false;
+      seen.add(r.url);
+      return true;
+    });
+    unique.sort((a, b) => (b.heat ?? 0) - (a.heat ?? 0));
+    outcomes[text] = { results: unique, sourceStats };
+  });
+
+  return outcomes;
 }
