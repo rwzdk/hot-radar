@@ -5,6 +5,15 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/),
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [未发布]
+
+### 变更
+
+- **全站视觉改版为卡通贴纸风**:奶油纸底 + 波点纹理,统一 3px 墨色描边与硬投影,不规则气泡圆角(Logo、铃铛、前三名排名、图标底盒),导航选中黄色贴纸、榜单前三名橙/青/蓝色块,平台切换与来源筛选改为描边贴纸 chip;
+- 图标系统重写为手绘多彩 SVG(火焰、靶心、放大镜、齿轮、铃铛、星星等),移除全部 emoji 图标;
+- 交互三态统一:悬停浮起 + 微旋转、按下压入纸面、禁用半透明;热度条改为榜内相对热度纯色绘制,虚线替换全部实线细分割线;
+- 设计规格见 `UI-DESIGN-SPEC.md`,视觉基准稿见 `design-final.html`。
+
 ## [1.0.0] - 2026-10-25
 
 首个正式版本,并已部署上线 [Qoder Sites](https://hot-radar-j8vzdjdlheu.qoder.website)。

@@ -5,7 +5,7 @@ import { BOARDS } from '../lib/boards';
 import { scanKeyword, type ScanOutcome } from '../lib/aggregate';
 import { analyzeBatch, analyzeItem } from '../lib/ai';
 import { useLocalState } from '../lib/storage';
-import { Button, Card, EmptyState, SectionTitle, Spinner } from '../components/ui';
+import { Badge, Button, Card, EmptyState, SectionTitle, Spinner } from '../components/ui';
 import { ResultCard } from '../components/result-card';
 import { SearchIcon, SparkIcon } from '../components/icons';
 
@@ -95,7 +95,7 @@ export default function SearchPage() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && search()}
             placeholder="输入关键词,回车搜索"
-            className="h-10 min-w-0 flex-1 rounded-[10px] border border-line bg-surface px-3.5 text-sm outline-none placeholder:text-muted focus:border-accent/60 focus:ring-2 focus:ring-accent/10"
+            className="h-10 min-w-0 flex-1 rounded-btn border-[3px] border-ink bg-surface px-3.5 text-sm font-bold outline-none transition-all duration-100 placeholder:font-medium placeholder:text-muted focus:shadow-toon-sm"
             autoFocus
           />
           <Button variant="primary" onClick={search} disabled={loading || !query.trim()}>
@@ -103,17 +103,17 @@ export default function SearchPage() {
             搜索
           </Button>
         </div>
-        <div className="mt-3 flex flex-wrap gap-1.5">
+        <div className="mt-3 flex flex-wrap gap-2">
           {BOARDS.map((b) => {
             const on = boards.includes(b.id);
             return (
               <button
                 key={b.id}
                 onClick={() => toggleBoard(b.id)}
-                className={`h-7 cursor-pointer rounded-full border px-3 text-xs transition-colors ${
+                className={`cursor-pointer rounded-full border-toon px-3 py-1 text-xs font-black transition-all duration-100 ${
                   on
-                    ? 'border-panel bg-panel text-panel-ink'
-                    : 'border-line bg-surface text-muted hover:text-ink'
+                    ? '-rotate-1 bg-teal text-white shadow-toon-sm'
+                    : 'bg-surface text-muted shadow-toon-sm hover:-rotate-1 hover:bg-yellow hover:text-ink active:translate-x-0.5 active:translate-y-0.5 active:shadow-toon-none'
                 }`}
               >
                 {b.name}
@@ -127,15 +127,15 @@ export default function SearchPage() {
       {loading && (
         <Card className="mt-4 p-6 text-center">
           <Spinner className="text-accent" />
-          <p className="mt-2 text-sm text-muted">正在聚合各数据源…</p>
+          <p className="mt-2 text-sm font-bold text-muted">正在聚合各数据源…</p>
         </Card>
       )}
 
       {outcome && !loading && (
         <div className="mt-4 space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-[13px] text-ink-soft">
-              「{searchedFor}」共 <span className="font-mono font-semibold">{outcome.results.length}</span> 条结果
+            <p className="text-[13px] font-bold text-ink-soft">
+              「{searchedFor}」共 <span className="font-mono font-black">{outcome.results.length}</span> 条结果
             </p>
             <Button
               size="sm"
@@ -151,19 +151,16 @@ export default function SearchPage() {
             {outcome.sourceStats
               .filter((s) => s.matched > 0)
               .map((s) => (
-                <span
-                  key={s.source}
-                  className="rounded-md border border-accent/20 bg-accent-soft px-1.5 py-0.5 text-[11px] text-accent-deep"
-                >
+                <Badge key={s.source} tone="accent">
                   {s.source} {s.matched}
-                </span>
+                </Badge>
               ))}
           </div>
 
           <Card>
             {outcome.results.length === 0 ? (
               <EmptyState
-                icon={<SearchIcon className="size-9" />}
+                icon={<SearchIcon className="size-7" />}
                 title="没有找到相关内容"
                 desc="热榜更新有延迟,也可以换一个更宽泛的关键词"
               />
@@ -184,7 +181,7 @@ export default function SearchPage() {
       {!outcome && !loading && (
         <Card className="mt-4">
           <EmptyState
-            icon={<SearchIcon className="size-10" />}
+            icon={<SearchIcon className="size-7" />}
             title="搜一次,看全网"
             desc="微博 / 知乎 / 抖音 / 头条 / B站热榜关键词匹配 + HackerNews 全文检索"
           />

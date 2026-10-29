@@ -4,7 +4,7 @@ import { boardMeta } from '../lib/boards';
 
 /* ---------- Button ---------- */
 
-type ButtonVariant = 'primary' | 'outline' | 'ghost' | 'danger';
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -12,18 +12,20 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANT_CLS: Record<ButtonVariant, string> = {
-  primary:
-    'bg-accent text-white hover:bg-accent-deep active:translate-y-px shadow-[0_1px_2px_rgba(216,69,42,0.25)]',
-  outline: 'border border-line bg-surface text-ink hover:border-ink/30 hover:bg-paper',
-  ghost: 'text-ink-soft hover:bg-paper hover:text-ink',
-  danger: 'border border-danger/30 bg-surface text-danger hover:bg-danger/5',
+  primary: 'bg-accent text-white hover:bg-accent-deep',
+  secondary: 'bg-teal text-white hover:bg-teal/90',
+  outline: 'bg-surface text-ink hover:bg-paper',
+  ghost: 'border-transparent bg-transparent text-ink-soft hover:border-ink hover:bg-surface hover:text-ink hover:shadow-toon-sm',
+  danger: 'bg-surface text-danger hover:bg-danger/10',
 };
 
 export function Button({ variant = 'outline', size = 'md', className = '', ...rest }: ButtonProps) {
   const sizeCls = size === 'sm' ? 'h-8 px-3 text-[13px]' : 'h-9.5 px-4 text-sm';
   return (
     <button
-      className={`inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-[10px] font-medium transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-45 ${VARIANT_CLS[variant]} ${sizeCls} ${className}`}
+      className={`inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-btn border-[3px] border-ink font-black transition-all duration-100 disabled:cursor-not-allowed disabled:opacity-45 disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0 ${
+        variant === 'ghost' ? '' : 'shadow-toon-sm hover:shadow-toon hover:-translate-x-px hover:-translate-y-px active:translate-x-0.5 active:translate-y-0.5 active:shadow-toon-none'
+      } ${VARIANT_CLS[variant]} ${sizeCls} ${className}`}
       {...rest}
     />
   );
@@ -39,9 +41,9 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 export function Input({ label, hint, className = '', ...rest }: InputProps) {
   return (
     <label className="block">
-      {label && <span className="mb-1.5 block text-[13px] font-medium text-ink-soft">{label}</span>}
+      {label && <span className="mb-1.5 block text-[13px] font-semibold text-ink-soft">{label}</span>}
       <input
-        className={`h-9.5 w-full rounded-[10px] border border-line bg-surface px-3 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:border-accent/60 focus:ring-2 focus:ring-accent/10 ${className}`}
+        className={`h-9.5 w-full rounded-btn border-[3px] border-ink bg-surface px-3 text-sm font-bold text-ink outline-none transition-all duration-100 placeholder:font-medium placeholder:text-muted focus:shadow-toon-sm ${className}`}
         {...rest}
       />
       {hint && <span className="mt-1.5 block text-xs leading-relaxed text-muted">{hint}</span>}
@@ -62,8 +64,10 @@ export function Card({
 }) {
   return (
     <div
-      className={`rounded-[14px] border border-line bg-surface shadow-[0_1px_2px_rgba(23,21,15,0.04)] ${
-        hover ? 'transition-shadow duration-200 hover:shadow-[0_6px_20px_rgba(23,21,15,0.08)]' : ''
+      className={`rounded-card border-toon bg-surface shadow-toon ${
+        hover
+          ? 'transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_var(--color-ink)]'
+          : ''
       } ${className}`}
     >
       {children}
@@ -75,8 +79,8 @@ export function SectionTitle({ title, desc, right }: { title: string; desc?: str
   return (
     <div className="mb-4 flex items-end justify-between gap-4">
       <div>
-        <h2 className="text-base font-semibold tracking-tight text-ink">{title}</h2>
-        {desc && <p className="mt-0.5 text-[13px] text-muted">{desc}</p>}
+        <h2 className="text-base font-black tracking-tight text-ink">{title}</h2>
+        {desc && <p className="mt-0.5 text-[13px] font-semibold text-muted">{desc}</p>}
       </div>
       {right}
     </div>
@@ -85,15 +89,16 @@ export function SectionTitle({ title, desc, right }: { title: string; desc?: str
 
 /* ---------- Badge ---------- */
 
-type Tone = 'neutral' | 'accent' | 'ok' | 'warn' | 'danger' | 'ink';
+type Tone = 'neutral' | 'accent' | 'ok' | 'warn' | 'danger' | 'ink' | 'blue';
 
 const TONE_CLS: Record<Tone, string> = {
-  neutral: 'bg-paper text-ink-soft border-line',
-  accent: 'bg-accent-soft text-accent-deep border-accent/20',
-  ok: 'bg-ok/10 text-ok border-ok/25',
-  warn: 'bg-warn/10 text-warn border-warn/25',
-  danger: 'bg-danger/10 text-danger border-danger/25',
-  ink: 'bg-panel text-panel-ink border-transparent',
+  neutral: 'bg-surface text-ink-soft',
+  accent: 'bg-accent-soft text-accent-deep',
+  ok: 'bg-teal-soft text-teal',
+  warn: 'bg-yellow-soft text-accent-deep',
+  danger: 'bg-accent-soft text-danger',
+  ink: 'bg-yellow text-ink',
+  blue: 'bg-blue-soft text-blue',
 };
 
 export function Badge({
@@ -107,7 +112,7 @@ export function Badge({
 }) {
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[11px] font-medium leading-4 ${TONE_CLS[tone]} ${className}`}
+      className={`inline-flex items-center gap-1 rounded-full border-toon-sm px-2 py-px text-[10px] font-black leading-4 ${TONE_CLS[tone]} ${className}`}
     >
       {children}
     </span>
@@ -117,8 +122,8 @@ export function Badge({
 /* ---------- 数据源徽标 ---------- */
 
 const SOURCE_TONE: Record<BoardId, Tone> = {
-  weibo: 'danger',
-  zhihu: 'accent',
+  weibo: 'accent',
+  zhihu: 'blue',
   douyin: 'ink',
   toutiao: 'warn',
   bili: 'ok',
@@ -146,13 +151,13 @@ export function ImportanceTag({ level }: { level: Importance }) {
 /* ---------- 相关度量表 ---------- */
 
 export function RelevanceMeter({ value }: { value: number }) {
-  const tone = value >= 70 ? 'bg-accent' : value >= 40 ? 'bg-warn' : 'bg-muted';
+  const tone = value >= 70 ? 'bg-accent' : value >= 40 ? 'bg-yellow' : 'bg-muted';
   return (
     <span className="inline-flex items-center gap-2" title={`相关度 ${value}/100`}>
-      <span className="h-1.5 w-16 overflow-hidden rounded-full bg-paper">
+      <span className="h-[13px] w-16 overflow-hidden rounded-full border-toon-sm bg-surface">
         <span className={`block h-full rounded-full ${tone}`} style={{ width: `${value}%` }} />
       </span>
-      <span className="font-mono text-xs tabular-nums text-ink-soft">{value}</span>
+      <span className="font-mono text-xs font-bold tabular-nums text-ink-soft">{value}</span>
     </span>
   );
 }
@@ -163,14 +168,11 @@ export function HeatBar({ ratio, label }: { ratio: number; label?: string }) {
   const pct = Math.max(3, Math.min(100, ratio * 100));
   return (
     <span className="inline-flex min-w-0 items-center gap-2">
-      <span className="h-1.5 w-14 shrink-0 overflow-hidden rounded-full bg-paper sm:w-20">
-        <span
-          className="block h-full rounded-full bg-gradient-to-r from-accent/70 to-accent"
-          style={{ width: `${pct}%` }}
-        />
+      <span className="h-[13px] w-14 shrink-0 overflow-hidden rounded-full border-toon-sm bg-surface sm:w-20">
+        <span className="block h-full rounded-full bg-accent" style={{ width: `${pct}%` }} />
       </span>
       {label && (
-        <span className="truncate font-mono text-xs tabular-nums text-muted">{label}</span>
+        <span className="truncate font-mono text-xs font-bold tabular-nums text-muted">{label}</span>
       )}
     </span>
   );
@@ -199,9 +201,13 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center gap-2 px-6 py-14 text-center">
-      {icon && <div className="mb-1 text-muted">{icon}</div>}
-      <p className="text-sm font-medium text-ink-soft">{title}</p>
-      {desc && <p className="max-w-sm text-[13px] leading-relaxed text-muted">{desc}</p>}
+      {icon && (
+        <div className="mb-1 grid size-14 -rotate-4 place-items-center rounded-blob-1 border-toon bg-yellow-soft shadow-toon-sm">
+          {icon}
+        </div>
+      )}
+      <p className="text-sm font-bold text-ink-soft">{title}</p>
+      {desc && <p className="max-w-sm text-[13px] font-semibold leading-relaxed text-muted">{desc}</p>}
       {action && <div className="mt-3">{action}</div>}
     </div>
   );
@@ -220,16 +226,16 @@ export function Toggle({
     <button
       type="button"
       onClick={() => onChange(!checked)}
-      className="inline-flex cursor-pointer items-center gap-2 text-sm text-ink-soft"
+      className="inline-flex cursor-pointer items-center gap-2 text-sm font-bold text-ink-soft"
     >
       <span
-        className={`relative h-5.5 w-10 rounded-full transition-colors duration-200 ${
-          checked ? 'bg-accent' : 'bg-line'
+        className={`relative h-6 w-11 rounded-full border-[3px] border-ink transition-colors duration-150 ${
+          checked ? 'bg-teal' : 'bg-surface'
         }`}
       >
         <span
-          className={`absolute top-0.5 size-4.5 rounded-full bg-white shadow transition-all duration-200 ${
-            checked ? 'left-5' : 'left-0.5'
+          className={`absolute top-0 size-4.5 rounded-full border-[2.5px] border-ink bg-white transition-all duration-150 ${
+            checked ? 'left-[20px]' : 'left-0'
           }`}
         />
       </span>

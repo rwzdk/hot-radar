@@ -25,6 +25,17 @@ interface SourceCheck {
   error?: string;
 }
 
+/** 卡片头部图标:36px 气泡底盒,soft 色轮换 + 微旋转 */
+function HeadIcon({ bg, rotate, children }: { bg: string; rotate: string; children: React.ReactNode }) {
+  return (
+    <span
+      className={`grid size-9 shrink-0 place-items-center rounded-blob-1 border-toon shadow-toon-sm ${bg} ${rotate}`}
+    >
+      {children}
+    </span>
+  );
+}
+
 function SettingsAiCard({ settings, setSettings }: {
   settings: Settings;
   setSettings: (fn: (s: Settings) => Settings) => void;
@@ -42,11 +53,13 @@ function SettingsAiCard({ settings, setSettings }: {
 
   return (
     <Card className="p-5">
-      <div className="mb-4 flex items-center gap-2">
-        <KeyIcon className="size-4.5 text-accent" />
-        <h3 className="text-sm font-semibold">AI 研判服务 · OpenRouter</h3>
+      <div className="mb-4 flex items-center gap-2.5">
+        <HeadIcon bg="bg-yellow-soft" rotate="-rotate-6">
+          <KeyIcon className="size-5" />
+        </HeadIcon>
+        <h3 className="text-sm font-black">AI 研判服务 · OpenRouter</h3>
         <span
-          className={`ml-auto text-xs ${settings.openrouterKey ? 'text-ok' : 'text-warn'}`}
+          className={`ml-auto text-xs font-bold ${settings.openrouterKey ? 'text-ok' : 'text-warn'}`}
         >
           {settings.openrouterKey ? '● 已配置' : '● 未配置'}
         </span>
@@ -54,14 +67,14 @@ function SettingsAiCard({ settings, setSettings }: {
 
       <div className="space-y-4">
         <div>
-          <span className="mb-1.5 block text-[13px] font-medium text-ink-soft">API Key</span>
+          <span className="mb-1.5 block text-[13px] font-semibold text-ink-soft">API Key</span>
           <div className="flex gap-2">
             <input
               type={show ? 'text' : 'password'}
               value={settings.openrouterKey}
               onChange={(e) => setSettings((s) => ({ ...s, openrouterKey: e.target.value.trim() }))}
               placeholder="sk-or-v1-…"
-              className="h-9.5 min-w-0 flex-1 rounded-[10px] border border-line bg-surface px-3 font-mono text-sm outline-none placeholder:text-muted focus:border-accent/60"
+              className="h-9.5 min-w-0 flex-1 rounded-btn border-[3px] border-ink bg-surface px-3 font-mono text-sm font-bold outline-none transition-all duration-100 placeholder:font-medium placeholder:text-muted focus:shadow-toon-sm"
               spellCheck={false}
             />
             <Button size="sm" onClick={() => setShow((v) => !v)} className="h-9.5">
@@ -79,7 +92,7 @@ function SettingsAiCard({ settings, setSettings }: {
             </Button>
           </div>
           {result && (
-            <p className={`mt-1.5 text-xs ${result.ok ? 'text-ok' : 'text-danger'}`}>
+            <p className={`mt-1.5 text-xs font-bold ${result.ok ? 'text-ok' : 'text-danger'}`}>
               {result.ok ? '✓ ' : '✕ '}
               {result.message}
             </p>
@@ -109,7 +122,7 @@ function SettingsAiCard({ settings, setSettings }: {
           }
         />
 
-        <p className="rounded-[10px] bg-paper px-3.5 py-2.5 text-xs leading-relaxed text-muted">
+        <p className="rounded-btn bg-paper px-3.5 py-2.5 text-xs font-semibold leading-relaxed text-muted">
           密钥仅保存在你当前浏览器的 localStorage 中,请求由浏览器直连 OpenRouter
           发出,本站没有后端、不会上传。建议在 OpenRouter
           后台单独创建一个设置了消费上限的 Key。
@@ -147,16 +160,18 @@ function SettingsNotifyCard({ settings, setSettings }: {
 
   return (
     <Card className="p-5">
-      <div className="mb-3.5 flex items-center gap-2">
-        <BellIcon className="size-4.5 text-accent" />
-        <h3 className="text-sm font-semibold">浏览器通知</h3>
+      <div className="mb-3.5 flex items-center gap-2.5">
+        <HeadIcon bg="bg-teal-soft" rotate="rotate-3">
+          <BellIcon className="size-5" />
+        </HeadIcon>
+        <h3 className="text-sm font-black">浏览器通知</h3>
       </div>
       <Toggle
         checked={settings.browserNotify}
         onChange={toggle}
         label="发现重要热点时发送系统通知"
       />
-      <p className="mt-2 text-xs leading-relaxed text-muted">{label}</p>
+      <p className="mt-2 text-xs font-semibold leading-relaxed text-muted">{label}</p>
     </Card>
   );
 }
@@ -191,10 +206,12 @@ function SettingsDataCard() {
 
   return (
     <Card className="p-5">
-      <div className="mb-3.5 flex items-center gap-2">
-        <DatabaseIcon className="size-4.5 text-accent" />
-        <h3 className="text-sm font-semibold">数据管理</h3>
-        <span className="ml-auto text-xs text-muted">数据仅存于本机浏览器</span>
+      <div className="mb-3.5 flex items-center gap-2.5">
+        <HeadIcon bg="bg-accent-soft" rotate="-rotate-3">
+          <DatabaseIcon className="size-5" />
+        </HeadIcon>
+        <h3 className="text-sm font-black">数据管理</h3>
+        <span className="ml-auto text-xs font-bold text-muted">数据仅存于本机浏览器</span>
       </div>
       <div className="flex flex-wrap gap-2">
         <Button size="sm" onClick={doExport}>
@@ -217,7 +234,7 @@ function SettingsDataCard() {
           }}
         />
       </div>
-      {msg && <p className="mt-2 text-xs text-danger">{msg}</p>}
+      {msg && <p className="mt-2 text-xs font-bold text-danger">{msg}</p>}
     </Card>
   );
 }
@@ -268,32 +285,34 @@ function SettingsSourcesCard() {
 
   return (
     <Card className="p-5">
-      <div className="mb-3.5 flex items-center gap-2">
-        <RefreshIcon className="size-4.5 text-accent" />
-        <h3 className="text-sm font-semibold">数据源体检</h3>
+      <div className="mb-3.5 flex items-center gap-2.5">
+        <HeadIcon bg="bg-teal-soft" rotate="rotate-2">
+          <RefreshIcon className="size-5" />
+        </HeadIcon>
+        <h3 className="text-sm font-black">数据源体检</h3>
         <Button size="sm" className="ml-auto" onClick={run} disabled={running}>
           {running ? <Spinner className="size-3.5" /> : <RefreshIcon className="size-3.5" />}
           {running ? '检测中…' : '开始检测'}
         </Button>
       </div>
       {checks ? (
-        <div className="grid gap-1.5 sm:grid-cols-2">
+        <div className="grid gap-2 sm:grid-cols-2">
           {checks.map((c) => (
             <div
               key={c.id}
-              className="flex items-center gap-2 rounded-[10px] border border-line/70 px-3 py-2 text-[13px]"
+              className="flex items-center gap-2 rounded-btn border-[3px] border-ink px-3 py-2 text-[13px] font-bold"
             >
               {c.status === 'pending' && <Spinner className="size-3" />}
-              {c.status === 'ok' && <CheckIcon className="size-3.5 text-ok" />}
-              {c.status === 'fail' && <XIcon className="size-3.5 text-danger" />}
-              <span className="font-medium">{c.name}</span>
+              {c.status === 'ok' && <CheckIcon className="size-3.5 shrink-0 text-ok" />}
+              {c.status === 'fail' && <XIcon className="size-3.5 shrink-0 text-danger" />}
+              <span className="font-extrabold">{c.name}</span>
               {c.status === 'ok' && (
-                <span className="ml-auto font-mono text-xs text-muted">
+                <span className="ml-auto font-mono text-xs font-bold text-muted">
                   {c.count} 条 · {c.ms}ms
                 </span>
               )}
               {c.status === 'fail' && (
-                <span className="ml-auto truncate text-xs text-danger" title={c.error}>
+                <span className="ml-auto truncate text-xs font-bold text-danger" title={c.error}>
                   {c.error}
                 </span>
               )}
@@ -301,7 +320,7 @@ function SettingsSourcesCard() {
           ))}
         </div>
       ) : (
-        <p className="text-xs leading-relaxed text-muted">
+        <p className="text-xs font-semibold leading-relaxed text-muted">
           检测各热榜实时接口的可用性与延迟。全部失败时,榜单页会自动回退到仓库内的每日快照。
         </p>
       )}

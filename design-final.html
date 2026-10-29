@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>热点雷达 · 终稿：贴纸乐园 × 糖果造型</title>
+<style>
+  :root {
+    /* ===== A 的配色 ===== */
+    --paper: #FFF6E9;
+    --surface: #FFFDF7;
+    --ink: #3B2F2A;
+    --ink-soft: #6E5F56;
+    --muted: #A08F81;
+    --orange: #FF6B35;
+    --orange-deep: #E8501A;
+    --orange-soft: #FFE3D3;
+    --teal: #2A9D8F;
+    --teal-soft: #DDF3EF;
+    --yellow: #FFC94D;
+    --yellow-soft: #FFF3D6;
+    --blue: #4D96FF;
+    --blue-soft: #E3EEFF;
+    /* ===== B 的造型 ===== */
+    --bd: 3px solid var(--ink);
+    --shadow: 5px 5px 0 var(--ink);
+    --shadow-sm: 3px 3px 0 var(--ink);
+    --blob-1: 50% 46% 52% 48%;
+    --blob-2: 46% 52% 48% 50%;
+    --blob-3: 52% 48% 50% 46%;
+    --blob-card: 26px 22px 28px 24px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  /* 奶油底 + 波点 */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image: radial-gradient(color-mix(in srgb, var(--orange) 13%, transparent) 1.5px, transparent 1.5px);
+    background-size: 26px 26px;
+    pointer-events: none;
+  }
+  .layout { position: relative; display: flex; min-height: 100vh; }
+  .ico-svg { display: block; }
+  .spark { position: fixed; pointer-events: none; z-index: 0; }
+
+  /* ---------- 侧边栏 ---------- */
+  .sidebar {
+    width: 216px; flex-shrink: 0;
+    background: var(--surface);
+    border-right: var(--bd);
+    display: flex; flex-direction: column;
+    padding: 22px 14px;
+    position: sticky; top: 0; height: 100vh;
+    z-index: 1;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; padding: 0 6px 20px; }
+  .logo-icon {
+    width: 44px; height: 44px; border: var(--bd); border-radius: var(--blob-1);
+    background: var(--orange); box-shadow: var(--shadow-sm);
+    display: grid; place-items: center;
+    transform: rotate(-6deg);
+  }
+  .logo-icon svg { width: 26px; height: 26px; }
+  .logo-name { font-size: 17px; font-weight: 900; letter-spacing: 1px; }
+  .logo-en { font-size: 10px; color: var(--muted); letter-spacing: 3px; font-weight: 800; }
+  .nav { flex: 1; display: flex; flex-direction: column; gap: 9px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 14px; border-radius: 16px 18px 16px 20px;
+    font-size: 14px; font-weight: 800; color: var(--ink-soft);
+    border: 3px solid transparent; cursor: pointer;
+    transition: all .15s;
+  }
+  .nav-item svg { width: 20px; height: 20px; }
+  .nav-item:hover { border-color: var(--ink); background: var(--paper); transform: translate(-1px,-1px) rotate(-.5deg); box-shadow: var(--shadow-sm); }
+  .nav-item.active {
+    background: var(--yellow); color: var(--ink);
+    border: var(--bd); box-shadow: var(--shadow-sm);
+    transform: rotate(-1.5deg);
+  }
+  .side-foot { border-top: 3px dashed color-mix(in srgb, var(--ink) 25%, transparent); padding-top: 14px; font-size: 11px; color: var(--muted); font-weight: 600; }
+  .side-foot a { color: var(--ink-soft); font-weight: 800; text-decoration: none; }
+
+  /* ---------- 主区域 ---------- */
+  .main { flex: 1; min-width: 0; z-index: 1; }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 32px 14px;
+  }
+  .page-title { display: flex; align-items: center; gap: 12px; }
+  .page-title h1 { font-size: 27px; font-weight: 900; letter-spacing: 1px; }
+  .page-title .sub {
+    background: var(--teal); color: #fff; font-size: 11px; font-weight: 900;
+    padding: 4px 10px; border-radius: 999px; border: var(--bd); box-shadow: var(--shadow-sm);
+    letter-spacing: 2px; transform: rotate(2deg);
+  }
+  .top-actions { display: flex; align-items: center; gap: 12px; }
+  .clock {
+    font-family: ui-monospace, Consolas, monospace; font-size: 13px; font-weight: 800;
+    background: var(--surface); border: var(--bd); border-radius: 14px;
+    padding: 7px 12px; box-shadow: var(--shadow-sm);
+  }
+  .bell {
+    position: relative; width: 42px; height: 42px; border: var(--bd); border-radius: var(--blob-1);
+    background: var(--yellow); box-shadow: var(--shadow-sm); cursor: pointer;
+    display: grid; place-items: center; transition: all .15s;
+  }
+  .bell svg { width: 21px; height: 21px; }
+  .bell:hover { transform: translate(-1px,-1px) rotate(3deg); box-shadow: 5px 5px 0 var(--ink); }
+  .bell .dot {
+    position: absolute; top: -7px; right: -7px; min-width: 20px; height: 20px;
+    background: var(--orange); color: #fff; font-size: 11px; font-weight: 900;
+    border: 2.5px solid var(--ink); border-radius: 999px; display: grid; place-items: center; padding: 0 4px;
+  }
+
+  .content { padding: 8px 32px 40px; max-width: 980px; }
+
+  /* ---------- 平台贴纸切换 ---------- */
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0 20px; align-items: center; }
+  .chip {
+    padding: 7px 16px; border-radius: 999px; border: var(--bd);
+    background: var(--surface); font-size: 13px; font-weight: 900; color: var(--ink-soft);
+    cursor: pointer; box-shadow: var(--shadow-sm); transition: all .12s;
+  }
+  .chip:hover { transform: translate(-1px,-1px) rotate(-1deg); box-shadow: 5px 5px 0 var(--ink); background: var(--yellow); color: var(--ink); }
+  .chip:active { transform: translate(2px,2px); box-shadow: 0 0 0 var(--ink); }
+  .chip.on { background: var(--orange); color: #fff; transform: rotate(-1deg); }
+  .chips .grow { flex: 1; }
+  .update-hint { font-size: 12px; color: var(--muted); font-weight: 700; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: 14px; border: var(--bd);
+    background: var(--surface); font-size: 13px; font-weight: 900; color: var(--ink);
+    cursor: pointer; box-shadow: var(--shadow-sm); transition: all .12s;
+  }
+  .btn svg { width: 15px; height: 15px; }
+  .btn:hover { transform: translate(-1px,-1px); box-shadow: 5px 5px 0 var(--ink); }
+  .btn:active { transform: translate(2px,2px); box-shadow: 0 0 0 var(--ink); }
+  .btn-primary { background: var(--orange); color: #fff; }
+  .btn-teal { background: var(--teal); color: #fff; }
+
+  /* ---------- 提示条 ---------- */
+  .notice {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--yellow-soft); border: var(--bd); border-radius: 16px;
+    box-shadow: var(--shadow-sm); padding: 10px 16px;
+    font-size: 13px; font-weight: 700; color: var(--ink-soft);
+    margin-bottom: 20px;
+  }
+  .notice .tag {
+    background: var(--yellow); color: var(--ink); border: 2.5px solid var(--ink); border-radius: 9px;
+    font-size: 11px; font-weight: 900; padding: 2px 8px; flex-shrink: 0; transform: rotate(-2deg);
+  }
+
+  /* ---------- 榜单卡片 ---------- */
+  .card {
+    background: var(--surface); border: var(--bd); border-radius: var(--blob-card);
+    box-shadow: var(--shadow); overflow: hidden;
+  }
+  .card-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 16px 22px 12px; border-bottom: 3px dashed color-mix(in srgb, var(--ink) 22%, transparent);
+  }
+  .card-head .flame {
+    width: 36px; height: 36px; border: var(--bd); border-radius: var(--blob-1);
+    background: var(--orange-soft); box-shadow: var(--shadow-sm);
+    display: grid; place-items: center; transform: rotate(-6deg);
+  }
+  .card-head .flame svg { width: 21px; height: 21px; }
+  .card-head h2 { font-size: 17px; font-weight: 900; }
+  .card-head .en { font-size: 10px; letter-spacing: 2px; color: var(--muted); font-weight: 900; }
+  .card-head .count { margin-left: auto; font-size: 12px; font-weight: 800; color: var(--muted); font-family: ui-monospace, Consolas, monospace; }
+
+  .row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 22px; border-bottom: 2.5px dashed color-mix(in srgb, var(--ink) 12%, transparent);
+    transition: background .12s; cursor: pointer;
+  }
+  .row:last-child { border-bottom: none; }
+  .row:hover { background: var(--paper); }
+  .rank {
+    width: 31px; height: 31px; flex-shrink: 0;
+    display: grid; place-items: center;
+    font-family: ui-monospace, Consolas, monospace; font-size: 15px; font-weight: 900; color: var(--muted);
+  }
+  .rank.top { border: var(--bd); box-shadow: var(--shadow-sm); color: #fff; }
+  .rank.r1 { background: var(--orange); border-radius: var(--blob-1); transform: rotate(-5deg); }
+  .rank.r2 { background: var(--teal); border-radius: var(--blob-2); transform: rotate(4deg); }
+  .rank.r3 { background: var(--blue); border-radius: var(--blob-3); transform: rotate(-4deg); }
+  .row .title { flex: 1; min-width: 0; font-size: 14px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row:hover .title { color: var(--orange-deep); }
+  .badge {
+    flex-shrink: 0; font-size: 10px; font-weight: 900; padding: 2px 8px;
+    border: 2.5px solid var(--ink); border-radius: 999px;
+  }
+  .badge.hot { background: var(--orange-soft); color: var(--orange-deep); }
+  .badge.new { background: var(--teal-soft); color: var(--teal); }
+  .heat { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .heat-bar {
+    width: 76px; height: 13px; border: 2.5px solid var(--ink); border-radius: 999px;
+    background: var(--surface); overflow: hidden;
+  }
+  .heat-bar i { display: block; height: 100%; background: var(--orange); border-radius: 999px; }
+  .heat-num { font-family: ui-monospace, Consolas, monospace; font-size: 11px; font-weight: 800; color: var(--muted); width: 58px; text-align: right; }
+
+  .foot { text-align: center; font-size: 12px; color: var(--muted); font-weight: 700; padding: 22px 0 6px; }
+</style>
+</head>
+<body>
+<!-- 手绘星星装饰 -->
+<div class="spark" style="top:70px;left:250px"><svg width="26" height="26" viewBox="0 0 24 24"><path d="M12 2.5l2 5.8 5.8 1.7-5.8 2-2 5.8-2-5.8-5.8-2 5.8-1.7z" fill="#FFC94D" stroke="#3B2F2A" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+<div class="spark" style="top:150px;right:60px"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 2.5l2 5.8 5.8 1.7-5.8 2-2 5.8-2-5.8-5.8-2 5.8-1.7z" fill="#2A9D8F" stroke="#3B2F2A" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+<div class="spark" style="bottom:120px;left:300px"><svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2.5l2 5.8 5.8 1.7-5.8 2-2 5.8-2-5.8-5.8-2 5.8-1.7z" fill="#FF6B35" stroke="#3B2F2A" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+
+<div class="layout">
+  <!-- 侧边栏 -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round">
+          <circle cx="12" cy="12" r="1.8" fill="#fff" stroke="none"/>
+          <path d="M12 12l4.6-4.6"/>
+          <path d="M12 5.3a6.7 6.7 0 0 1 6.8 6.6"/>
+          <path d="M12 8.6a3.4 3.4 0 0 1 3.5 3.3"/>
+          <path d="M12 18.7a6.7 6.7 0 0 1-6.8-6.6"/>
+          <path d="M12 15.4a3.4 3.4 0 0 1-3.5-3.3"/>
+        </svg>
+      </div>
+      <div>
+        <div class="logo-name">热点雷达</div>
+        <div class="logo-en">HOTRADAR</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active">
+        <svg class="ico-svg" viewBox="0 0 24 24">
+          <path d="M12.2 2.8c.5 2.2 2.9 3.5 3.9 5.6 1.1 2.3.9 5.3-.7 7.2-1.7 2-4.6 2.6-7 1.6-2.3-1-3.9-3.4-3.7-5.9.1-1.9 1.1-3.5 2.4-4.7.3 1 .9 1.9 1.9 2.2-.2-2.1.5-4.3 1.7-6z" fill="#FF6B35" stroke="#3B2F2A" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M12 12.3c1.1 1.1 1.8 2.3 1.6 3.7-.2 1.3-1.3 2.2-2.6 2.1-1.2-.1-2.1-1.2-2-2.4.1-1.2 1.8-2.2 3-3.4z" fill="#FFF3D6" stroke="#3B2F2A" stroke-width="1.3" stroke-linejoin="round"/>
+        </svg>
+        热榜总览
+      </div>
+      <div class="nav-item">
+        <svg class="ico-svg" viewBox="0 0 24 24">
+          <path d="M12 3.6c4.7-.3 8.6 3.7 8.3 8.5-.2 4.6-3.9 8.2-8.5 8.2-4.5.1-8.2-3.8-8.1-8.4C3.8 7.4 7.4 3.9 12 3.6z" fill="#DDF3EF" stroke="#3B2F2A" stroke-width="1.8"/>
+          <path d="M12 7.4c2.6-.1 4.7 2 4.6 4.6-.1 2.5-2.1 4.4-4.6 4.4-2.5 0-4.5-2-4.4-4.5.1-2.4 2.1-4.4 4.6-4.5z" fill="#2A9D8F" stroke="#3B2F2A" stroke-width="1.5"/>
+          <circle cx="12" cy="12" r="1.6" fill="#FFC94D" stroke="#3B2F2A" stroke-width="1.2"/>
+        </svg>
+        关键词监控
+      </div>
+      <div class="nav-item">
+        <svg class="ico-svg" viewBox="0 0 24 24">
+          <path d="M10.8 4.3c3.6-.2 6.6 2.7 6.5 6.3-.1 3.5-3 6.3-6.5 6.2-3.4 0-6.2-2.9-6.1-6.4.1-3.4 2.8-6 6.1-6.1z" fill="#E3EEFF" stroke="#3B2F2A" stroke-width="1.8"/>
+          <path d="M15.5 15.5l4.4 4.4" stroke="#3B2F2A" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M8 8.4c.7-.9 1.7-1.5 2.8-1.5" stroke="#3B2F2A" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+        </svg>
+        全网搜索
+      </div>
+      <div class="nav-item">
+        <svg class="ico-svg" viewBox="0 0 24 24">
+          <path d="M12 3.6l1.3 2.1 2.4-.4.9 2.2 2.3.7-.5 2.4 1.7 1.7-1.7 1.7.5 2.4-2.3.7-.9 2.2-2.4-.4-1.3 2.1-1.3-2.1-2.4.4-.9-2.2-2.3-.7.5-2.4L3.3 12l1.7-1.7-.5-2.4 2.3-.7.9-2.2 2.4.4z" fill="#FFC94D" stroke="#3B2F2A" stroke-width="1.5" stroke-linejoin="round"/>
+          <circle cx="12" cy="12" r="2.9" fill="#FFFDF7" stroke="#3B2F2A" stroke-width="1.5"/>
+        </svg>
+        设置
+      </div>
+    </nav>
+    <div class="side-foot">
+      <a href="#">★ GitHub 仓库</a>
+      <p style="margin-top:6px">v1.0.0 · 纯静态部署</p>
+    </div>
+  </aside>
+
+  <!-- 主区域 -->
+  <div class="main">
+    <header class="topbar">
+      <div class="page-title">
+        <h1>热榜总览</h1>
+        <span class="sub">BOARDS</span>
+      </div>
+      <div class="top-actions">
+        <span class="clock">14:32:07</span>
+        <button class="bell">
+          <svg class="ico-svg" viewBox="0 0 24 24">
+            <path d="M12 3.8c-3.1 0-5 2.5-5 5.5 0 2.9-.9 4.1-1.8 5.3-.3.4 0 1 .5 1h12.6c.5 0 .8-.6.5-1-.9-1.2-1.8-2.4-1.8-5.3 0-3-1.9-5.5-4.8-5.5z" fill="#fff" stroke="#3B2F2A" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M10 18.6c.3 1 1 1.6 2 1.6s1.7-.6 2-1.6" fill="none" stroke="#3B2F2A" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <span class="dot">3</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="content">
+      <!-- 平台贴纸 -->
+      <div class="chips">
+        <button class="chip on">微博</button>
+        <button class="chip">知乎</button>
+        <button class="chip">抖音</button>
+        <button class="chip">头条</button>
+        <button class="chip">B站</button>
+        <button class="chip">HackerNews</button>
+        <span class="grow"></span>
+        <span class="update-hint">实时 · 5 分钟前更新</span>
+        <button class="btn btn-teal">
+          <svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19.5 8.5A8 8 0 0 0 5.9 5.5"/>
+            <path d="M4 2.8v3.6h3.6"/>
+            <path d="M4.5 15.5A8 8 0 0 0 18.1 18.5"/>
+            <path d="M20 21.2v-3.6h-3.6"/>
+          </svg>
+          刷新
+        </button>
+        <button class="btn btn-primary">立即扫描</button>
+      </div>
+
+      <!-- 提示条 -->
+      <div class="notice">
+        <span class="tag">提示</span>
+        实时接口暂时不可用，当前展示最近一次仓库快照（每日由 GitHub Actions 生成）。
+      </div>
+
+      <!-- 榜单卡片 -->
+      <section class="card">
+        <div class="card-head">
+          <div class="flame">
+            <svg class="ico-svg" viewBox="0 0 24 24">
+              <path d="M12.2 2.8c.5 2.2 2.9 3.5 3.9 5.6 1.1 2.3.9 5.3-.7 7.2-1.7 2-4.6 2.6-7 1.6-2.3-1-3.9-3.4-3.7-5.9.1-1.9 1.1-3.5 2.4-4.7.3 1 .9 1.9 1.9 2.2-.2-2.1.5-4.3 1.7-6z" fill="#FF6B35" stroke="#3B2F2A" stroke-width="1.8" stroke-linejoin="round"/>
+              <path d="M12 12.3c1.1 1.1 1.8 2.3 1.6 3.7-.2 1.3-1.3 2.2-2.6 2.1-1.2-.1-2.1-1.2-2-2.4.1-1.2 1.8-2.2 3-3.4z" fill="#FFC94D" stroke="#3B2F2A" stroke-width="1.3" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h2>微博热榜</h2>
+          <span class="en">WEIBO</span>
+          <span class="count">50 条</span>
+        </div>
+
+        <div class="row">
+          <span class="rank top r1">1</span>
+          <span class="title">神舟二十一号载人飞船发射取得圆满成功</span>
+          <span class="badge hot">沸</span>
+          <span class="heat"><span class="heat-bar"><i style="width:100%"></i></span><span class="heat-num">482.3万</span></span>
+        </div>
+        <div class="row">
+          <span class="rank top r2">2</span>
+          <span class="title">国足世预赛名单公布 多名年轻球员入选</span>
+          <span class="badge new">新</span>
+          <span class="heat"><span class="heat-bar"><i style="width:76%"></i></span><span class="heat-num">366.1万</span></span>
+        </div>
+        <div class="row">
+          <span class="rank top r3">3</span>
+          <span class="title">多家航空公司宣布下调国内航线燃油附加费</span>
+          <span class="heat"><span class="heat-bar"><i style="width:61%"></i></span><span class="heat-num">293.8万</span></span>
+        </div>
+        <div class="row">
+          <span class="rank">4</span>
+          <span class="title">科学家发现新型高效太阳能电池材料</span>
+          <span class="heat"><span class="heat-bar"><i style="width:48%"></i></span><span class="heat-num">231.5万</span></span>
+        </div>
+        <div class="row">
+          <span class="rank">5</span>
+          <span class="title">秋季限定美食地图：这十座城市最值得去吃</span>
+          <span class="badge new">新</span>
+          <span class="heat"><span class="heat-bar"><i style="width:39%"></i></span><span class="heat-num">187.2万</span></span>
+        </div>
+        <div class="row">
+          <span class="rank">6</span>
+          <span class="title">全国多地开启降温模式 北方局地降温超 10℃</span>
+          <span class="heat"><span class="heat-bar"><i style="width:31%"></i></span><span class="heat-num">149.6万</span></span>
+        </div>
+      </section>
+
+      <p class="foot">热点雷达 · 数据来自各平台公开热榜与 Hacker News，仅供个人学习参考</p>
+    </main>
+  </div>
+</div>
+</body>
+</html>

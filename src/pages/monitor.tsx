@@ -19,6 +19,9 @@ import {
   TrashIcon,
 } from '../components/icons';
 
+const SELECT_CLS =
+  'h-8 cursor-pointer rounded-btn border-[3px] border-ink bg-surface px-2.5 text-[13px] font-bold text-ink-soft outline-none transition-all duration-100 focus:shadow-toon-sm';
+
 /* ============ 单个关键词的监控面板 ============ */
 
 function KeywordPanel({
@@ -140,11 +143,11 @@ function KeywordPanel({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2.5">
-              <TargetIcon className="size-5 shrink-0 text-accent" />
-              <h2 className="truncate text-lg font-semibold tracking-tight">{kw.text}</h2>
-              {kw.paused && <Badge>已暂停</Badge>}
+              <TargetIcon className="size-6 shrink-0" />
+              <h2 className="truncate text-lg font-black tracking-tight">{kw.text}</h2>
+              {kw.paused && <Badge tone="neutral">已暂停</Badge>}
             </div>
-            <p className="mt-1 font-mono text-xs text-muted">
+            <p className="mt-1 font-mono text-xs font-bold text-muted">
               累计 {results.length} 条 · 已研判 {analyzedCount} 条
               {kw.lastScanAt && ` · 上次扫描 ${relativeTime(kw.lastScanAt)}`}
             </p>
@@ -175,26 +178,26 @@ function KeywordPanel({
         {/* AI 进度条 */}
         {aiBusy && aiProgress && (
           <div className="mt-3">
-            <div className="h-1.5 overflow-hidden rounded-full bg-paper">
+            <div className="h-3 overflow-hidden rounded-full border-toon-sm bg-surface">
               <div
-                className="h-full rounded-full bg-accent transition-all duration-300"
+                className="h-full rounded-full bg-teal transition-all duration-300"
                 style={{ width: `${(aiProgress.done / Math.max(1, aiProgress.total)) * 100}%` }}
               />
             </div>
-            <p className="mt-1 text-xs text-muted">
+            <p className="mt-1 text-xs font-bold text-muted">
               AI 研判中 {aiProgress.done}/{aiProgress.total}
               {aiProgress.current && ` · ${aiProgress.current.slice(0, 30)}…`}
             </p>
           </div>
         )}
 
-        <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-line/70 pt-3">
+        <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 border-t-[3px] border-dashed border-ink/15 pt-3">
           <Toggle
             checked={kw.autoAi}
             onChange={(v) => onUpdate({ autoAi: v })}
             label="扫描后自动 AI 研判"
           />
-          <span className={`text-xs ${aiReady ? 'text-ok' : 'text-warn'}`}>
+          <span className={`text-xs font-bold ${aiReady ? 'text-ok' : 'text-warn'}`}>
             {aiReady ? `● AI 已就绪(${settings.model})` : '● 未配置 AI 密钥,前往设置页填写'}
           </span>
         </div>
@@ -205,7 +208,7 @@ function KeywordPanel({
         <select
           value={fSource}
           onChange={(e) => setFSource(e.target.value as typeof fSource)}
-          className="h-8 cursor-pointer rounded-lg border border-line bg-surface px-2.5 text-[13px] text-ink-soft outline-none"
+          className={SELECT_CLS}
         >
           <option value="all">全部来源</option>
           {BOARDS.map((b) => (
@@ -217,7 +220,7 @@ function KeywordPanel({
         <select
           value={fImp}
           onChange={(e) => setFImp(e.target.value as typeof fImp)}
-          className="h-8 cursor-pointer rounded-lg border border-line bg-surface px-2.5 text-[13px] text-ink-soft outline-none"
+          className={SELECT_CLS}
         >
           <option value="all">全部重要度</option>
           {IMPORTANCE_ORDER.map((i) => (
@@ -229,20 +232,20 @@ function KeywordPanel({
         <select
           value={fSort}
           onChange={(e) => setFSort(e.target.value as typeof fSort)}
-          className="h-8 cursor-pointer rounded-lg border border-line bg-surface px-2.5 text-[13px] text-ink-soft outline-none"
+          className={SELECT_CLS}
         >
           <option value="heat">按热度</option>
           <option value="relevance">按相关度</option>
           <option value="time">按捕获时间</option>
         </select>
-        <span className="ml-auto font-mono text-xs text-muted">{filtered.length} 条</span>
+        <span className="ml-auto font-mono text-xs font-bold text-muted">{filtered.length} 条</span>
       </div>
 
       {/* 结果列表 */}
       <Card>
         {filtered.length === 0 ? (
           <EmptyState
-            icon={<TargetIcon className="size-10" />}
+            icon={<TargetIcon className="size-7" />}
             title={results.length === 0 ? '还没有扫描记录' : '当前过滤条件下没有内容'}
             desc={
               results.length === 0
@@ -329,7 +332,7 @@ export default function MonitorPage({
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && addKeyword()}
               placeholder="输入关注的关键词,如 Claude"
-              className="h-9 min-w-0 flex-1 rounded-[10px] border border-line bg-surface px-3 text-sm outline-none placeholder:text-muted focus:border-accent/60"
+              className="h-9 min-w-0 flex-1 rounded-btn border-[3px] border-ink bg-surface px-3 text-sm font-bold outline-none transition-all duration-100 placeholder:font-medium placeholder:text-muted focus:shadow-toon-sm"
             />
             <Button variant="primary" size="sm" onClick={addKeyword} className="w-9 px-0">
               <PlusIcon className="size-4" />
@@ -337,9 +340,9 @@ export default function MonitorPage({
           </div>
         </Card>
 
-        <Card className="overflow-hidden">
+        <Card className="p-1.5">
           {keywords.length === 0 ? (
-            <p className="px-4 py-8 text-center text-[13px] leading-relaxed text-muted">
+            <p className="px-4 py-8 text-center text-[13px] font-semibold leading-relaxed text-muted">
               还没有监控关键词
               <br />
               添加一个开始追踪热点
@@ -351,17 +354,21 @@ export default function MonitorPage({
               return (
                 <div
                   key={k.id}
-                  className={`group flex cursor-pointer items-center gap-2 border-b border-line/60 px-3.5 py-2.5 transition-colors last:border-0 ${
-                    on ? 'bg-accent-soft/50' : 'hover:bg-paper/70'
+                  className={`group flex cursor-pointer items-center gap-2 rounded-nav border-[3px] border-transparent px-3 py-2.5 transition-all duration-100 ${
+                    on
+                      ? '-rotate-1 border-ink bg-yellow shadow-toon-sm'
+                      : 'hover:bg-paper'
                   }`}
                   onClick={() => navigate(`monitor?kw=${k.id}`)}
                 >
                   <span
-                    className={`size-1.5 shrink-0 rounded-full ${k.paused ? 'bg-muted' : on ? 'bg-accent' : 'bg-ok'}`}
+                    className={`size-2.5 shrink-0 rounded-blob-3 ${
+                      k.paused ? 'bg-muted' : on ? 'bg-accent' : 'bg-teal'
+                    }`}
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-medium text-ink">{k.text}</p>
-                    <p className="font-mono text-[10px] text-muted">
+                    <p className="truncate text-[13px] font-extrabold text-ink">{k.text}</p>
+                    <p className="font-mono text-[10px] font-bold text-muted">
                       {k.paused ? '已暂停' : '监控中'} · {count} 条
                       {k.lastScanAt ? ` · ${relativeTime(k.lastScanAt)}` : ''}
                     </p>
@@ -371,7 +378,7 @@ export default function MonitorPage({
                       e.stopPropagation();
                       updateKeyword(k.id, { paused: !k.paused });
                     }}
-                    className="cursor-pointer rounded p-1 text-muted opacity-0 transition-all hover:bg-paper hover:text-ink group-hover:opacity-100"
+                    className="cursor-pointer rounded p-1 text-muted transition-colors hover:bg-paper hover:text-ink"
                     title={k.paused ? '恢复监控' : '暂停监控'}
                   >
                     {k.paused ? <PlayIcon className="size-3.5" /> : <PauseIcon className="size-3.5" />}
@@ -381,7 +388,7 @@ export default function MonitorPage({
                       e.stopPropagation();
                       deleteKeyword(k.id);
                     }}
-                    className="cursor-pointer rounded p-1 text-muted opacity-0 transition-all hover:bg-danger/10 hover:text-danger group-hover:opacity-100"
+                    className="cursor-pointer rounded p-1 text-muted transition-colors hover:bg-accent-soft hover:text-danger"
                     title="删除"
                   >
                     <TrashIcon className="size-3.5" />
@@ -403,7 +410,7 @@ export default function MonitorPage({
       ) : (
         <Card>
           <EmptyState
-            icon={<TargetIcon className="size-10" />}
+            icon={<TargetIcon className="size-7" />}
             title="选择或创建一个关键词"
             desc="热点雷达会从微博、知乎、抖音、头条、B站热榜与 HackerNews 中,持续追踪与关键词相关的内容"
           />
