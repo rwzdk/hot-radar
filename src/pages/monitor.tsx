@@ -50,7 +50,7 @@ import {
 } from '../components/icons';
 
 const SELECT_CLS =
-  'h-8 cursor-pointer rounded-btn border-[3px] border-ink bg-surface px-2.5 text-[13px] font-bold text-ink-soft outline-none transition-all duration-100 focus:shadow-toon-sm';
+  'h-8 cursor-pointer rounded-btn border-[3px] border-ink bg-surface px-2.5 text-[13px] font-bold text-ink-soft outline-none transition-all duration-100 hover:-translate-y-px hover:bg-paper hover:text-ink hover:shadow-toon-sm focus:shadow-toon-sm';
 
 function boardName(source: string): string {
   return BOARDS.find((board) => board.id === source)?.name ?? source;

@@ -1,11 +1,11 @@
 {
-  "generatedAt": 1793294552509,
+  "generatedAt": 1793295257538,
   "boardAt": {
     "weibo": 1792938978573,
     "zhihu": 1792938978573,
     "douyin": 1792938978573,
     "toutiao": 1792938978573,
-    "hackernews": 1793294552509
+    "hackernews": 1793295257538
   },
   "boards": {
     "weibo": [
@@ -1418,25 +1418,25 @@
       {
         "title": "Qwenputer: A functioning, deterministic RISC-V CPU inside Qwen3.5",
         "url": "https://divagr.com/blog/qwenputer",
-        "heat": 660,
-        "heatLabel": "660 分",
+        "heat": 662,
+        "heatLabel": "662 分",
         "extra": "139 评论 · @csmantle",
         "source": "hackernews"
       },
       {
         "title": "We're releasing the weights of Mistral Large 4",
         "url": "https://mistral.ai/news/mistral-large-4-oss/",
-        "heat": 624,
-        "heatLabel": "624 分",
-        "extra": "160 评论 · @kuberwastaken",
+        "heat": 644,
+        "heatLabel": "644 分",
+        "extra": "164 评论 · @kuberwastaken",
         "source": "hackernews"
       },
       {
         "title": "Gemini 4 Carbon is the new #1 on the Artificial Analysis Intelligence Index v5",
         "url": "https://artificialanalysis.ai/articles/gemini-4-carbon-new-number-1",
-        "heat": 300,
-        "heatLabel": "300 分",
-        "extra": "224 评论 · @theHocineSaad",
+        "heat": 304,
+        "heatLabel": "304 分",
+        "extra": "225 评论 · @theHocineSaad",
         "source": "hackernews"
       },
       {
@@ -1444,55 +1444,39 @@
         "url": "https://smsofdeath.com/",
         "heat": 272,
         "heatLabel": "272 分",
-        "extra": "154 评论 · @MarkBlah",
+        "extra": "156 评论 · @MarkBlah",
         "source": "hackernews"
       },
       {
         "title": "The US added a record 20.2 GWh of battery storage in just 3 months",
         "url": "https://electrek.co/2026/08/31/the-us-added-a-record-20-2-gwh-of-battery-storage-in-just-3-months/",
-        "heat": 246,
-        "heatLabel": "246 分",
-        "extra": "157 评论 · @ljf",
-        "source": "hackernews"
-      },
-      {
-        "title": "Hackers expose the identities of more than 40k DHS employees",
-        "url": "https://text.npr.org/nx-s1-6021497",
-        "heat": 227,
-        "heatLabel": "227 分",
-        "extra": "52 评论 · @firefax",
+        "heat": 249,
+        "heatLabel": "249 分",
+        "extra": "158 评论 · @ljf",
         "source": "hackernews"
       },
       {
         "title": "DoorDash to acquire Instacart",
         "url": "https://about.doordash.com/en-us/news/doordash-to-acquire-instacart",
-        "heat": 220,
-        "heatLabel": "220 分",
-        "extra": "398 评论 · @WalterSobchak",
-        "source": "hackernews"
-      },
-      {
-        "title": "Forging a Microsoft Edge Full Chain with Logic Bugs Only",
-        "url": "https://blog.orange.tw/posts/2026-10-the-last-proof-of-human-craft-browser-full-chain/",
-        "heat": 211,
-        "heatLabel": "211 分",
-        "extra": "37 评论 · @austinallegro",
+        "heat": 228,
+        "heatLabel": "228 分",
+        "extra": "414 评论 · @WalterSobchak",
         "source": "hackernews"
       },
       {
         "title": "How Google determines the names for bodies of water in Google Earth",
         "url": "https://publicpolicy.googleblog.com/2008/04/how-google-determines-names-for-bodies.html",
-        "heat": 172,
-        "heatLabel": "172 分",
-        "extra": "134 评论 · @terminalbraid",
+        "heat": 176,
+        "heatLabel": "176 分",
+        "extra": "137 评论 · @terminalbraid",
         "source": "hackernews"
       },
       {
         "title": "Chained PHP2Shell Exploit Roots 25 Servers, Including US Government Servers",
         "url": "https://dreamgroup.com/blog/chained-php2shell-exploit-roots-25-servers",
-        "heat": 165,
-        "heatLabel": "165 分",
-        "extra": "74 评论 · @882542F3884314B",
+        "heat": 167,
+        "heatLabel": "167 分",
+        "extra": "77 评论 · @882542F3884314B",
         "source": "hackernews"
       },
       {
@@ -1506,49 +1490,57 @@
       {
         "title": "If IPv4 were land",
         "url": "https://iptrust.co/blog/if-ipv4-were-land",
-        "heat": 145,
-        "heatLabel": "145 分",
-        "extra": "134 评论 · @rokostik",
+        "heat": 149,
+        "heatLabel": "149 分",
+        "extra": "144 评论 · @rokostik",
         "source": "hackernews"
       },
       {
         "title": "Mexico is a showroom for electric vehicles you can't buy in the U.S.",
         "url": "https://www.washingtonpost.com/climate-environment/2026/10/27/i-saw-future-driving-mexico-its-off-limits-americans/",
-        "heat": 140,
-        "heatLabel": "140 分",
-        "extra": "109 评论 · @bookofjoe",
+        "heat": 149,
+        "heatLabel": "149 分",
+        "extra": "129 评论 · @bookofjoe",
         "source": "hackernews"
       },
       {
         "title": "For the first time ever, Google Search is less than 50% of Alphabet's revenue",
         "url": "https://www.kadoa.com/companies/insights/google-search-below-half",
-        "heat": 110,
-        "heatLabel": "110 分",
-        "extra": "53 评论 · @hubraumhugo",
+        "heat": 133,
+        "heatLabel": "133 分",
+        "extra": "76 评论 · @hubraumhugo",
         "source": "hackernews"
       },
       {
-        "title": "NetBSD adds a new text editor called atto",
-        "url": "https://mastodon.sdf.org/@netbsd/117518160563539748",
-        "heat": 103,
-        "heatLabel": "103 分",
-        "extra": "91 评论 · @luke8086",
+        "title": "If-then-else had to be invented (2020)",
+        "url": "https://github.com/e-n-f/if-then-else/blob/master/if-then-else.md",
+        "heat": 121,
+        "heatLabel": "121 分",
+        "extra": "140 评论 · @theanonymousone",
         "source": "hackernews"
       },
       {
         "title": "H.264 Is Magic (2016)",
         "url": "https://sidbala.com/h-264-is-magic/",
-        "heat": 99,
-        "heatLabel": "99 分",
-        "extra": "42 评论 · @ea016",
+        "heat": 105,
+        "heatLabel": "105 分",
+        "extra": "44 评论 · @ea016",
+        "source": "hackernews"
+      },
+      {
+        "title": "NetBSD adds a new text editor called atto",
+        "url": "https://mastodon.sdf.org/@netbsd/117518160563539748",
+        "heat": 104,
+        "heatLabel": "104 分",
+        "extra": "93 评论 · @luke8086",
         "source": "hackernews"
       },
       {
         "title": "Zombie stats: Where the numbers AI quotes come from",
         "url": "https://trakkr.ai/trakkr-research/zombie-stats",
-        "heat": 78,
-        "heatLabel": "78 分",
-        "extra": "36 评论 · @mektrik",
+        "heat": 79,
+        "heatLabel": "79 分",
+        "extra": "37 评论 · @mektrik",
         "source": "hackernews"
       },
       {
@@ -1560,59 +1552,83 @@
         "source": "hackernews"
       },
       {
-        "title": "Grace Blackwell needs a new scheduler: 27% more usable GPUs from the same racks",
-        "url": "https://skypilot.ai/blog/grace-blackwell-needs-a-new-scheduler",
-        "heat": 48,
-        "heatLabel": "48 分",
-        "extra": "2 评论 · @wondersky",
-        "source": "hackernews"
-      },
-      {
-        "title": "What we know so far about Spain train crash",
-        "url": "https://www.bbc.com/news/articles/cm8xz7pkd0jjo",
-        "heat": 43,
-        "heatLabel": "43 分",
-        "extra": "85 评论 · @ZeljkoS",
+        "title": "We won't \"just hang out\"",
+        "url": "https://borretti.me/article/we-wont-just-hang-out",
+        "heat": 60,
+        "heatLabel": "60 分",
+        "extra": "112 评论 · @barry-cotter",
         "source": "hackernews"
       },
       {
         "title": "LLM Voice",
         "url": "https://martinfowler.com/bliki/LLM-Voice.html",
-        "heat": 41,
-        "heatLabel": "41 分",
-        "extra": "7 评论 · @ibobev",
+        "heat": 52,
+        "heatLabel": "52 分",
+        "extra": "13 评论 · @ibobev",
+        "source": "hackernews"
+      },
+      {
+        "title": "Grace Blackwell needs a new scheduler: 27% more usable GPUs from the same racks",
+        "url": "https://skypilot.ai/blog/grace-blackwell-needs-a-new-scheduler",
+        "heat": 50,
+        "heatLabel": "50 分",
+        "extra": "4 评论 · @wondersky",
+        "source": "hackernews"
+      },
+      {
+        "title": "What we know so far about Spain train crash",
+        "url": "https://www.bbc.com/news/articles/cm8xz7pkd0jjo",
+        "heat": 45,
+        "heatLabel": "45 分",
+        "extra": "87 评论 · @ZeljkoS",
         "source": "hackernews"
       },
       {
         "title": "Keplearn: Extract Equations from Data in Seconds",
         "url": "https://github.com/owls-on-wires/keplearn",
-        "heat": 41,
-        "heatLabel": "41 分",
+        "heat": 42,
+        "heatLabel": "42 分",
         "extra": "1 评论 · @owls-on-wires",
         "source": "hackernews"
       },
       {
         "title": "noalloc: Tooling and libraries to enforce zero heap allocations in Golang",
         "url": "https://github.com/theconsensuslabs/noalloc",
-        "heat": 20,
-        "heatLabel": "20 分",
+        "heat": 22,
+        "heatLabel": "22 分",
         "extra": "1 评论 · @g0xA52A2A",
         "source": "hackernews"
       },
       {
         "title": "Launch HN: Simantic (YC F26) – Firmware Simulation for AI Agents",
         "url": "https://news.ycombinator.com/item?id=50291116",
+        "heat": 15,
+        "heatLabel": "15 分",
+        "extra": "8 评论 · @shong0504",
+        "source": "hackernews"
+      },
+      {
+        "title": "Tomas Mikolov (creator of Word2Vec) receives the Medal of Merit",
+        "url": "https://www.vut.cz/en/but/news-f19528/two-but-graduates-received-state-honors-from-the-president-of-the-republic-d378468",
         "heat": 14,
         "heatLabel": "14 分",
-        "extra": "8 评论 · @shong0504",
+        "extra": "1 评论 · @armcat",
         "source": "hackernews"
       },
       {
         "title": "16colo.rs – ANSI/ASCII art archive",
         "url": "https://16colo.rs/",
-        "heat": 12,
-        "heatLabel": "12 分",
+        "heat": 14,
+        "heatLabel": "14 分",
         "extra": "0 评论 · @memalign",
+        "source": "hackernews"
+      },
+      {
+        "title": "Toxic Experts",
+        "url": "https://nedbatchelder.com/blog/201711/toxic_experts",
+        "heat": 13,
+        "heatLabel": "13 分",
+        "extra": "2 评论 · @luu",
         "source": "hackernews"
       },
       {
@@ -1621,22 +1637,6 @@
         "heat": 11,
         "heatLabel": "11 分",
         "extra": "1 评论 · @hunio",
-        "source": "hackernews"
-      },
-      {
-        "title": "Tomas Mikolov (creator of Word2Vec) receives the Medal of Merit",
-        "url": "https://www.vut.cz/en/but/news-f19528/two-but-graduates-received-state-honors-from-the-president-of-the-republic-d378468",
-        "heat": 10,
-        "heatLabel": "10 分",
-        "extra": "1 评论 · @armcat",
-        "source": "hackernews"
-      },
-      {
-        "title": "Toxic Experts",
-        "url": "https://nedbatchelder.com/blog/201711/toxic_experts",
-        "heat": 7,
-        "heatLabel": "7 分",
-        "extra": "0 评论 · @luu",
         "source": "hackernews"
       },
       {

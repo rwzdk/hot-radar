@@ -196,7 +196,7 @@ function SettingsScanCard({ settings, setSettings }: {
             value={String(settings.autoScanMinutes)}
             onChange={(e) => setSettings((s) => ({ ...s, autoScanMinutes: Number(e.target.value) }))}
             aria-label="自动扫描间隔"
-            className="h-9 cursor-pointer rounded-btn border-[3px] border-ink bg-surface px-2.5 text-[13px] font-bold text-ink outline-none transition-all duration-100 focus:shadow-toon-sm"
+            className="h-9 cursor-pointer rounded-btn border-[3px] border-ink bg-surface px-2.5 text-[13px] font-bold text-ink outline-none transition-all duration-100 hover:-translate-y-px hover:bg-paper hover:shadow-toon-sm focus:shadow-toon-sm"
           >
             <option value="0">关闭(手动扫描)</option>
             <option value="5">每 5 分钟</option>

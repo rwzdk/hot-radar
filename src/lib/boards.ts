@@ -117,10 +117,10 @@ interface Api60sResponse {
   data: Api60sItem[] | null;
 }
 
-/** 把 "293万" / "43.2w" 这类热度文案解析回数值,失败返回 undefined */
+/** 把 "293万" / "43.2w" / "2412 万热度" 这类热度文案解析回数值,失败返回 undefined */
 function parseHeatText(text?: string): number | undefined {
   if (!text) return undefined;
-  const m = text.trim().match(/^([\d.]+)\s*(万|w)?$/i);
+  const m = String(text).trim().match(/([\d.]+)\s*(万|w)?/i);
   if (!m) return undefined;
   const num = Number(m[1]);
   if (!Number.isFinite(num)) return undefined;
@@ -179,12 +179,16 @@ async function fetchFrom60s(path: string, source: BoardId): Promise<BoardItem[]>
         },
       ];
     }
-    // 微博/知乎/抖音/头条/B站:统一结构
+    // 微博/知乎/抖音/头条/B站:统一结构;接口只给文案热度(如 "2412 万热度")时解析出数值,保证热度条可用
+    const heat =
+      typeof it.hot_value === 'number'
+        ? it.hot_value
+        : parseHeatText(it.hot_value_desc ?? '');
     return [
       {
         ...base,
-        heat: typeof it.hot_value === 'number' ? it.hot_value : undefined,
-        heatLabel: it.hot_value_desc ?? formatHeat(it.hot_value),
+        heat,
+        heatLabel: it.hot_value_desc ?? formatHeat(heat),
         extra: it.answer_cnt != null ? `${it.answer_cnt} 回答` : undefined,
         cover: safeUrl(it.cover),
       },

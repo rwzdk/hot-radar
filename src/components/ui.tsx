@@ -235,10 +235,10 @@ export function Toggle({
       role="switch"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className="inline-flex cursor-pointer items-center gap-2 text-sm font-bold text-ink-soft"
+      className="group inline-flex cursor-pointer items-center gap-2 text-sm font-bold text-ink-soft transition-colors duration-150 hover:text-ink"
     >
       <span
-        className={`relative h-6 w-11 rounded-full border-[3px] border-ink transition-colors duration-150 ${
+        className={`relative h-6 w-11 rounded-full border-[3px] border-ink transition-all duration-150 group-hover:-translate-y-px group-hover:shadow-toon-sm ${
           checked ? 'bg-teal' : 'bg-surface'
         }`}
       >

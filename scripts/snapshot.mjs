@@ -41,10 +41,10 @@ function safeUrl(raw) {
   }
 }
 
-/** 把 "293万" / "43.2w" 这类热度文案解析回数值 */
+/** 把 "293万" / "43.2w" / "2412 万热度" 这类热度文案解析回数值 */
 function parseHeatText(text) {
   if (!text) return undefined;
-  const m = String(text).trim().match(/^([\d.]+)\s*(万|w)?$/i);
+  const m = String(text).trim().match(/([\d.]+)\s*(万|w)?/i);
   if (!m) return undefined;
   const num = Number(m[1]);
   if (!Number.isFinite(num)) return undefined;
@@ -86,11 +86,15 @@ function normalizeItem(item, id) {
       heatLabel: formatHeat(heat),
     };
   }
+  const heat =
+    typeof item.hot_value === 'number'
+      ? item.hot_value
+      : parseHeatText(item.hot_value_desc ?? '');
   return {
     title,
     url,
-    heat: typeof item.hot_value === 'number' ? item.hot_value : undefined,
-    heatLabel: item.hot_value_desc ?? formatHeat(item.hot_value),
+    heat,
+    heatLabel: item.hot_value_desc ?? formatHeat(heat),
     extra: item.answer_cnt != null ? `${item.answer_cnt} 回答` : undefined,
     cover: safeUrl(item.cover),
   };
