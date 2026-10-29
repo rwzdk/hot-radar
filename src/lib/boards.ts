@@ -1,5 +1,6 @@
 import type { BoardId, BoardItem } from '../types';
 import { hnFrontPage } from './hackernews';
+import { safeUrl } from './url';
 
 export interface BoardMeta {
   id: BoardId;
@@ -21,29 +22,63 @@ export const BOARDS: BoardMeta[] = [
 ];
 
 export function boardMeta(id: BoardId): BoardMeta {
-  return BOARDS.find((b) => b.id === id)!;
+  return (
+    BOARDS.find((b) => b.id === id) ?? { id, name: String(id), en: 'Unknown' }
+  );
 }
 
 export interface BoardFetchResult {
   items: BoardItem[];
   /** live = 实时接口;snapshot = 仓库内每日快照兜底 */
   from: 'live' | 'snapshot';
+  /** 数据本身的时间(快照模式为单榜快照时间) */
   fetchedAt: number;
+  /** 本次拉取时间,用于缓存新鲜度,避免快照结果被误判为过期 */
+  loadedAt: number;
   error?: string;
+}
+
+export interface SnapshotFile {
+  generatedAt: number;
+  /** 单榜最近一次成功抓取时间;某源失败保留旧数据时用于展示真实新鲜度 */
+  boardAt?: Partial<Record<BoardId, number>>;
+  boards: Partial<Record<BoardId, BoardItem[]>>;
 }
 
 const API_60S = 'https://60s.viki.moe/v2/';
 const REQUEST_TIMEOUT = 12_000;
+const RETRY_DELAY = 350;
 
-async function getJson<T>(url: string): Promise<T> {
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isRetryable(error: unknown): boolean {
+  if (error instanceof DOMException && error.name === 'AbortError') return true;
+  if (error instanceof TypeError) return true;
+  return error instanceof Error && /HTTP 5\d\d/.test(error.message);
+}
+
+async function getJsonOnce<T>(url: string): Promise<T> {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT);
   try {
-    const res = await fetch(url, { signal: ctrl.signal });
+    const res = await fetch(url, { signal: ctrl.signal, headers: { Accept: 'application/json' } });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return (await res.json()) as T;
   } finally {
     clearTimeout(timer);
+  }
+}
+
+/** 网络错误/5xx 重试一次;429 直接失败,交给快照兜底 */
+async function getJson<T>(url: string): Promise<T> {
+  try {
+    return await getJsonOnce<T>(url);
+  } catch (error) {
+    if (!isRetryable(error)) throw error;
+    await sleep(RETRY_DELAY);
+    return getJsonOnce<T>(url);
   }
 }
 
@@ -75,20 +110,64 @@ async function fetchFrom60s(path: string): Promise<BoardItem[]> {
   if (json.code !== 200 || !Array.isArray(json.data)) {
     throw new Error(`60s API 返回 code=${json.code}`);
   }
-  return json.data.map((it) => ({
-    title: it.title ?? '',
-    url: it.link ?? '',
-    heat: it.hot_value ?? undefined,
-    heatLabel: it.hot_value_desc ?? formatHeat(it.hot_value),
-    extra: it.answer_cnt != null ? `${it.answer_cnt} 回答` : undefined,
-    cover: it.cover,
-    source: 'weibo',
-  }));
+  return json.data.flatMap((it) => {
+    const url = safeUrl(it.link);
+    const title = it.title?.trim();
+    if (!url || !title) return [];
+    return [
+      {
+        title,
+        url,
+        heat: typeof it.hot_value === 'number' ? it.hot_value : undefined,
+        heatLabel: it.hot_value_desc ?? formatHeat(it.hot_value),
+        extra: it.answer_cnt != null ? `${it.answer_cnt} 回答` : undefined,
+        cover: safeUrl(it.cover),
+        source: 'weibo' as const,
+      },
+    ];
+  });
 }
 
-interface SnapshotFile {
-  generatedAt: number;
-  boards: Partial<Record<BoardId, BoardItem[]>>;
+function normalizeSnapshot(raw: unknown): SnapshotFile | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const obj = raw as { generatedAt?: unknown; boardAt?: unknown; boards?: unknown };
+  if (typeof obj.generatedAt !== 'number' || !obj.boards || typeof obj.boards !== 'object') {
+    return null;
+  }
+  const byBoard = obj.boards as Record<string, unknown>;
+  const byBoardAt =
+    obj.boardAt && typeof obj.boardAt === 'object'
+      ? (obj.boardAt as Record<string, unknown>)
+      : {};
+  const boardAt: Partial<Record<BoardId, number>> = {};
+  const boards: Partial<Record<BoardId, BoardItem[]>> = {};
+  for (const meta of BOARDS) {
+    const list = byBoard[meta.id];
+    if (!Array.isArray(list)) continue;
+    const items: BoardItem[] = [];
+    for (const entry of list) {
+      if (!entry || typeof entry !== 'object') continue;
+      const it = entry as Record<string, unknown>;
+      const url = safeUrl(typeof it.url === 'string' ? it.url : undefined);
+      const title = typeof it.title === 'string' ? it.title.trim() : '';
+      if (!url || !title) continue;
+      items.push({
+        title,
+        url,
+        source: meta.id,
+        heat: typeof it.heat === 'number' ? it.heat : undefined,
+        heatLabel: typeof it.heatLabel === 'string' ? it.heatLabel : undefined,
+        extra: typeof it.extra === 'string' ? it.extra : undefined,
+        cover: typeof it.cover === 'string' ? safeUrl(it.cover) : undefined,
+      });
+    }
+    if (items.length > 0) {
+      boards[meta.id] = items;
+      const at = byBoardAt[meta.id];
+      boardAt[meta.id] = typeof at === 'number' ? at : obj.generatedAt;
+    }
+  }
+  return { generatedAt: obj.generatedAt, boardAt, boards };
 }
 
 let snapshotCache: Promise<SnapshotFile | null> | null = null;
@@ -96,7 +175,8 @@ let snapshotCache: Promise<SnapshotFile | null> | null = null;
 /** 读取随仓库构建的每日快照(由 GitHub Actions 生成) */
 export function loadSnapshot(): Promise<SnapshotFile | null> {
   if (!snapshotCache) {
-    snapshotCache = getJson<SnapshotFile>(`${import.meta.env.BASE_URL}data/snapshot.json`)
+    snapshotCache = getJson<unknown>(`${import.meta.env.BASE_URL}data/snapshot.json`)
+      .then(normalizeSnapshot)
       .catch(() => null)
       .then((snap) => {
         // 快取失败就置空,下次(如重新部署后)再试
@@ -112,23 +192,28 @@ export async function fetchBoard(id: BoardId): Promise<BoardFetchResult> {
   const meta = BOARDS.find((b) => b.id === id)!;
   if (id === 'hackernews') {
     try {
-      return { items: await hnFrontPage(), from: 'live', fetchedAt: Date.now() };
+      const now = Date.now();
+      return { items: await hnFrontPage(), from: 'live', fetchedAt: now, loadedAt: now };
     } catch (e) {
       const snap = await fallbackSnapshot(id);
-      return snap ?? { items: [], from: 'live', fetchedAt: Date.now(), error: String(e) };
+      const now = Date.now();
+      return snap ?? { items: [], from: 'live', fetchedAt: now, loadedAt: now, error: String(e) };
     }
   }
   try {
     const items = (await fetchFrom60s(meta.api!)).map((it) => ({ ...it, source: id }));
     if (items.length === 0) throw new Error('空数据');
-    return { items, from: 'live', fetchedAt: Date.now() };
+    const now = Date.now();
+    return { items, from: 'live', fetchedAt: now, loadedAt: now };
   } catch (e) {
     const snap = await fallbackSnapshot(id);
+    const now = Date.now();
     return (
       snap ?? {
         items: [],
         from: 'live',
-        fetchedAt: Date.now(),
+        fetchedAt: now,
+        loadedAt: now,
         error: e instanceof Error ? e.message : String(e),
       }
     );
@@ -139,15 +224,29 @@ async function fallbackSnapshot(id: BoardId): Promise<BoardFetchResult | null> {
   const snap = await loadSnapshot();
   const items = snap?.boards[id];
   if (snap && items && items.length > 0) {
-    return { items, from: 'snapshot', fetchedAt: snap.generatedAt };
+    return {
+      items: items.map((it) => ({ ...it, source: id })),
+      from: 'snapshot',
+      fetchedAt: snap.boardAt?.[id] ?? snap.generatedAt,
+      loadedAt: Date.now(),
+    };
   }
   return null;
 }
 
-/** 并行拉取多个榜单,逐个容错 */
+/** 并行拉取多个榜单,最多 2 并发并留出间隔,降低接口限流概率 */
 export async function fetchBoards(ids: BoardId[]): Promise<Record<BoardId, BoardFetchResult>> {
-  const entries = await Promise.all(
-    ids.map(async (id) => [id, await fetchBoard(id)] as const),
-  );
-  return Object.fromEntries(entries) as Record<BoardId, BoardFetchResult>;
+  const result = {} as Record<BoardId, BoardFetchResult>;
+  let cursor = 0;
+
+  async function worker() {
+    while (cursor < ids.length) {
+      const id = ids[cursor++];
+      result[id] = await fetchBoard(id);
+      if (cursor < ids.length) await sleep(150);
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(2, ids.length) }, worker));
+  return result;
 }

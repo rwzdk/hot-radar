@@ -23,7 +23,8 @@ export function Button({ variant = 'outline', size = 'md', className = '', ...re
   const sizeCls = size === 'sm' ? 'h-8 px-3 text-[13px]' : 'h-9.5 px-4 text-sm';
   return (
     <button
-      className={`inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-btn border-[3px] border-ink font-black transition-all duration-100 disabled:cursor-not-allowed disabled:opacity-45 disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0 ${
+      type="button"
+      className={`inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-btn border-[3px] border-ink font-black transition-all duration-100 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-45 disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0 ${
         variant === 'ghost' ? '' : 'shadow-toon-sm hover:shadow-toon hover:-translate-x-px hover:-translate-y-px active:translate-x-0.5 active:translate-y-0.5 active:shadow-toon-none'
       } ${VARIANT_CLS[variant]} ${sizeCls} ${className}`}
       {...rest}
@@ -131,7 +132,7 @@ const SOURCE_TONE: Record<BoardId, Tone> = {
 };
 
 export function SourceBadge({ source }: { source: BoardId }) {
-  return <Badge tone={SOURCE_TONE[source]}>{boardMeta(source).name}</Badge>;
+  return <Badge tone={SOURCE_TONE[source] ?? 'neutral'}>{boardMeta(source).name}</Badge>;
 }
 
 /* ---------- 重要度标签 ---------- */
@@ -144,7 +145,7 @@ const IMPORTANCE_META: Record<Importance, { label: string; tone: Tone }> = {
 };
 
 export function ImportanceTag({ level }: { level: Importance }) {
-  const meta = IMPORTANCE_META[level];
+  const meta = IMPORTANCE_META[level] ?? IMPORTANCE_META.low;
   return <Badge tone={meta.tone}>{meta.label}</Badge>;
 }
 
@@ -225,6 +226,8 @@ export function Toggle({
   return (
     <button
       type="button"
+      role="switch"
+      aria-checked={checked}
       onClick={() => onChange(!checked)}
       className="inline-flex cursor-pointer items-center gap-2 text-sm font-bold text-ink-soft"
     >

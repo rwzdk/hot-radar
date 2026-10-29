@@ -6,6 +6,7 @@ interface NoticesApi {
   notices: NoticeEvent[];
   unread: number;
   push: (e: Omit<NoticeEvent, 'id' | 'at' | 'read'>) => void;
+  markRead: (id: string) => void;
   markAllRead: () => void;
   clear: () => void;
 }
@@ -26,6 +27,13 @@ export function NoticesProvider({ children }: { children: ReactNode }) {
     [setNotices],
   );
 
+  const markRead = useCallback(
+    (id: string) => {
+      setNotices((list) => list.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    },
+    [setNotices],
+  );
+
   const markAllRead = useCallback(() => {
     setNotices((list) => list.map((n) => ({ ...n, read: true })));
   }, [setNotices]);
@@ -37,10 +45,11 @@ export function NoticesProvider({ children }: { children: ReactNode }) {
       notices,
       unread: notices.filter((n) => !n.read).length,
       push,
+      markRead,
       markAllRead,
       clear,
     }),
-    [notices, push, markAllRead, clear],
+    [notices, push, markRead, markAllRead, clear],
   );
 
   return <NoticesContext.Provider value={value}>{children}</NoticesContext.Provider>;
@@ -57,7 +66,7 @@ export function notifyBrowser(title: string, body: string) {
   if (typeof Notification === 'undefined') return;
   if (Notification.permission !== 'granted') return;
   try {
-    new Notification(title, { body, icon: '/logo.svg' });
+    new Notification(title, { body, icon: `${import.meta.env.BASE_URL}logo.svg` });
   } catch {
     /* 某些环境不允许 */
   }

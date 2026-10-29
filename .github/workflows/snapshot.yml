@@ -4,14 +4,23 @@ on:
   schedule:
     # UTC 每天 01:30(北京时间 09:30)
     - cron: '30 1 * * *'
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'public/data/snapshot.json'
   workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: hot-radar-snapshot
+  cancel-in-progress: false
+
 jobs:
   snapshot:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: 拉取仓库
         uses: actions/checkout@v4
@@ -34,4 +43,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add public/data/snapshot.json
           git commit -m "chore(data): 更新每日热榜快照 $(date -u +%F)"
+          git pull --rebase --autostash origin main
           git push

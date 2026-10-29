@@ -199,6 +199,10 @@ export function Shell({
     <div className="flex min-h-screen bg-paper text-ink">
       <a
         href="#main"
+        onClick={(event) => {
+          event.preventDefault();
+          document.getElementById('main')?.focus();
+        }}
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-btn focus:border-toon focus:bg-yellow focus:px-3 focus:py-2 focus:text-sm focus:font-black focus:shadow-toon-sm"
       >
         跳到主要内容
@@ -228,7 +232,9 @@ export function Shell({
             return (
               <button
                 key={item.id}
+                type="button"
                 onClick={() => navigate(item.id)}
+                aria-current={active ? 'page' : undefined}
                 className={`flex w-full cursor-pointer items-center gap-2.5 rounded-nav border-[3px] px-3.5 py-2 text-sm font-extrabold transition-all duration-150 ${
                   active
                     ? '-rotate-1.5 border-ink bg-yellow text-ink shadow-toon-sm'
@@ -250,9 +256,9 @@ export function Shell({
             className="flex items-center gap-2 text-xs font-extrabold text-ink-soft transition-colors hover:text-accent-deep"
           >
             <GithubIcon className="size-4" />
-            ★ GitHub 仓库
+            GitHub 仓库
           </a>
-          <p className="mt-2 font-mono text-[10px] font-bold text-muted">v1.1.0 · 纯静态部署</p>
+          <p className="mt-2 font-mono text-[10px] font-bold text-muted">v1.1.0</p>
         </div>
       </aside>
 
@@ -275,7 +281,8 @@ export function Shell({
 
         <main
           id="main"
-          className="mx-auto w-full max-w-[980px] flex-1 px-4 pb-24 pt-2 sm:px-5 md:pb-10 lg:px-8"
+          tabIndex={-1}
+          className="mx-auto w-full max-w-[980px] flex-1 px-4 pb-24 pt-2 outline-none sm:px-5 md:pb-10 lg:px-8"
         >
           {children}
         </main>

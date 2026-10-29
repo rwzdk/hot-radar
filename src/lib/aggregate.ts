@@ -6,7 +6,8 @@ import { hnSearch } from './hackernews';
 export function splitTerms(keyword: string): string[] {
   const raw = keyword
     .toLowerCase()
-    .split(/[\s,，、/|·.。:;；!！?？\-_/\\]+/)
+    // 保留连字符,避免 deepseek-v3 被拆成过于宽泛的 deepseek
+    .split(/[\s,，、/|·.。:;；!！?？_/\\]+/)
     .map((t) => t.trim())
     .filter((t) => t.length >= 2);
   return [...new Set(raw.length > 0 ? raw : [keyword.toLowerCase()])];
@@ -17,11 +18,19 @@ function matches(text: string, terms: string[]): boolean {
   return terms.some((t) => lower.includes(t));
 }
 
+/** 文本是否命中排除词(供榜单页等展示过滤使用) */
+export function matchesExclude(text: string, exclude: string | undefined): boolean {
+  if (!exclude?.trim()) return false;
+  return matches(text, splitTerms(exclude));
+}
+
 export interface ScanOptions {
   /** 参与扫描的热榜平台 */
   boards?: BoardId[];
   /** HN 搜索拉取条数 */
   hnLimit?: number;
+  /** 命中后需要排除的词 */
+  exclude?: string;
 }
 
 export interface ScanOutcome {
@@ -37,6 +46,8 @@ export interface ScanOutcome {
  */
 export async function scanKeyword(keyword: string, opts: ScanOptions = {}): Promise<ScanOutcome> {
   const terms = splitTerms(keyword);
+  const excludeTerms = opts.exclude?.trim() ? splitTerms(opts.exclude) : [];
+  const hit = (text: string) => matches(text, terms) && !matches(text, excludeTerms);
   const boardIds = opts.boards ?? ['weibo', 'zhihu', 'douyin', 'toutiao', 'bili', 'hackernews'];
 
   const [boardResults, hnResults] = await Promise.all([
@@ -53,7 +64,7 @@ export async function scanKeyword(keyword: string, opts: ScanOptions = {}): Prom
 
   for (const [id, fetched] of Object.entries(boardResults)) {
     const matched = fetched.items
-      .filter((it) => matches(`${it.title} ${it.extra ?? ''}`, terms))
+      .filter((it) => hit(`${it.title} ${it.extra ?? ''}`))
       .map<WatchResult>((it) => ({
         id: it.url,
         title: it.title,
@@ -73,13 +84,14 @@ export async function scanKeyword(keyword: string, opts: ScanOptions = {}): Prom
   }
 
   if (boardIds.includes('hackernews')) {
+    const hnMatched = hnResults.filter((r) => !matches(`${r.title} ${r.content ?? ''}`, excludeTerms));
     sourceStats.push({
       source: 'hackernews',
       total: hnResults.length,
-      matched: hnResults.length,
+      matched: hnMatched.length,
       ok: true,
     });
-    results.push(...hnResults);
+    results.push(...hnMatched);
   }
 
   // 去重(以 url 为准)后按热度排序
@@ -104,10 +116,12 @@ export function mergeHistory(
   for (const item of fresh) {
     const old = byId.get(item.id);
     if (old) {
-      // 保留旧的 AI 结论与首次发现时间,刷新热度
+      // 保留旧的 AI 结论、首次发现时间与正文,刷新热度
       byId.set(item.id, {
         ...item,
         foundAt: old.foundAt,
+        content: item.content ?? old.content,
+        publishedAt: item.publishedAt ?? old.publishedAt,
         ai: old.ai,
       });
     } else {
@@ -116,6 +130,6 @@ export function mergeHistory(
     }
   }
   const merged = [...byId.values()].sort((a, b) => (b.heat ?? 0) - (a.heat ?? 0));
-  // 历史最多保留 300 条,避免 localStorage 膨胀
-  return { merged: merged.slice(0, 300), added };
+  // 历史最多保留 200 条,控制多关键词场景下的 localStorage 体积
+  return { merged: merged.slice(0, 200), added };
 }

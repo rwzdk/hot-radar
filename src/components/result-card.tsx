@@ -44,7 +44,7 @@ export function ResultCard({
           {/* 第一行:来源 + 标题 */}
           <div className="flex flex-wrap items-center gap-2">
             <SourceBadge source={item.source} />
-            {isNew && <Badge tone="accent">NEW</Badge>}
+            {isNew && <Badge tone="accent">新</Badge>}
             {suspicious && (
               <Badge tone="danger">
                 <ShieldIcon className="size-3" /> 真实性存疑

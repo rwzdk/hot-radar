@@ -3,7 +3,7 @@ import type { Settings } from '../types';
 import { DEFAULT_SETTINGS } from '../types';
 import { BOARDS, fetchBoard } from '../lib/boards';
 import { testApiKey } from '../lib/ai';
-import { clearAll, exportAll, importAll, useLocalState } from '../lib/storage';
+import { clearAll, downloadFile, exportAll, importAll, useLocalState } from '../lib/storage';
 import { Button, Card, Input, SectionTitle, Spinner, Toggle } from '../components/ui';
 import {
   BellIcon,
@@ -74,6 +74,8 @@ function SettingsAiCard({ settings, setSettings }: {
               value={settings.openrouterKey}
               onChange={(e) => setSettings((s) => ({ ...s, openrouterKey: e.target.value.trim() }))}
               placeholder="sk-or-v1-…"
+              aria-label="OpenRouter API Key"
+              autoComplete="off"
               className="h-9.5 min-w-0 flex-1 rounded-btn border-[3px] border-ink bg-surface px-3 font-mono text-sm font-bold outline-none transition-all duration-100 placeholder:font-medium placeholder:text-muted focus:shadow-toon-sm"
               spellCheck={false}
             />
@@ -123,9 +125,7 @@ function SettingsAiCard({ settings, setSettings }: {
         />
 
         <p className="rounded-btn bg-paper px-3.5 py-2.5 text-xs font-semibold leading-relaxed text-muted">
-          密钥仅保存在你当前浏览器的 localStorage 中,请求由浏览器直连 OpenRouter
-          发出,本站没有后端、不会上传。建议在 OpenRouter
-          后台单独创建一个设置了消费上限的 Key。
+          建议为热点雷达单独创建一个 Key,并在 OpenRouter 后台设置消费上限。
         </p>
       </div>
     </Card>
@@ -181,15 +181,15 @@ function SettingsDataCard() {
   const [msg, setMsg] = useState('');
 
   function doExport() {
-    const blob = new Blob([exportAll()], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `hot-radar-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(a.href);
+    downloadFile(
+      `hot-radar-backup-${new Date().toISOString().slice(0, 10)}.json`,
+      exportAll(),
+      'application/json',
+    );
   }
 
   async function doImport(file: File) {
+    if (!confirm('导入将覆盖当前的关键词、监控历史与通知,是否继续?')) return;
     const text = await file.text();
     if (importAll(text)) {
       location.reload();
@@ -199,7 +199,7 @@ function SettingsDataCard() {
   }
 
   function doClear() {
-    if (!confirm('确定清空全部本地数据(关键词、监控历史、通知、设置)?此操作不可恢复。')) return;
+    if (!confirm('确定清空全部数据(关键词、监控历史、通知、设置)?此操作不可恢复。')) return;
     clearAll();
     location.reload();
   }
@@ -211,7 +211,6 @@ function SettingsDataCard() {
           <DatabaseIcon className="size-5" />
         </HeadIcon>
         <h3 className="text-sm font-black">数据管理</h3>
-        <span className="ml-auto text-xs font-bold text-muted">数据仅存于本机浏览器</span>
       </div>
       <div className="flex flex-wrap gap-2">
         <Button size="sm" onClick={doExport}>
@@ -227,6 +226,7 @@ function SettingsDataCard() {
           ref={fileRef}
           type="file"
           accept="application/json"
+          aria-label="选择备份文件"
           className="hidden"
           onChange={(e) => {
             const f = e.target.files?.[0];
@@ -234,6 +234,9 @@ function SettingsDataCard() {
           }}
         />
       </div>
+      <p className="mt-2 text-xs font-semibold leading-relaxed text-muted">
+        备份不包含 AI 密钥。
+      </p>
       {msg && <p className="mt-2 text-xs font-bold text-danger">{msg}</p>}
     </Card>
   );
@@ -251,35 +254,37 @@ function SettingsSourcesCard() {
       status: 'pending',
     }));
     setChecks(list);
-    await Promise.all(
-      BOARDS.map(async (b) => {
-        const t0 = performance.now();
-        try {
-          const r = await fetchBoard(b.id);
-          setChecks((prev) =>
-            (prev ?? []).map((c) =>
-              c.id === b.id
-                ? {
-                    ...c,
-                    status: r.items.length > 0 ? 'ok' : 'fail',
-                    count: r.items.length,
-                    ms: Math.round(performance.now() - t0),
-                    error: r.items.length === 0 ? (r.error ?? '空数据') : undefined,
-                  }
-                : c,
-            ),
-          );
-        } catch (e) {
-          setChecks((prev) =>
-            (prev ?? []).map((c) =>
-              c.id === b.id
-                ? { ...c, status: 'fail', error: e instanceof Error ? e.message : '网络错误' }
-                : c,
-            ),
-          );
-        }
-      }),
-    );
+    for (const b of BOARDS) {
+      const t0 = performance.now();
+      try {
+        const r = await fetchBoard(b.id);
+        const live = r.from === 'live' && r.items.length > 0;
+        setChecks((prev) =>
+          (prev ?? []).map((c) =>
+            c.id === b.id
+              ? {
+                  ...c,
+                  status: live ? 'ok' : 'fail',
+                  count: r.items.length,
+                  ms: Math.round(performance.now() - t0),
+                  error: live
+                    ? undefined
+                    : (r.error ?? (r.from === 'snapshot' ? '实时失败,已回退快照' : '空数据')),
+                }
+              : c,
+          ),
+        );
+      } catch (e) {
+        setChecks((prev) =>
+          (prev ?? []).map((c) =>
+            c.id === b.id
+              ? { ...c, status: 'fail', error: e instanceof Error ? e.message : '网络错误' }
+              : c,
+          ),
+        );
+      }
+      await new Promise((resolve) => setTimeout(resolve, 150));
+    }
     setRunning(false);
   }
 
@@ -333,7 +338,7 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-3xl animate-rise space-y-4">
-      <SectionTitle title="设置" desc="所有配置保存在本地浏览器,即配即用" />
+      <SectionTitle title="设置" desc="配置 AI 研判、通知与数据备份" />
       <SettingsAiCard settings={settings} setSettings={setSettings} />
       <SettingsNotifyCard settings={settings} setSettings={setSettings} />
       <SettingsDataCard />

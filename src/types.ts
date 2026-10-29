@@ -20,6 +20,8 @@ export interface Keyword {
   id: string;
   text: string;
   note?: string;
+  /** 命中后需要排除的词,逗号/空格分隔 */
+  exclude?: string;
   paused: boolean;
   /** 扫描后是否自动跑 AI 分析 */
   autoAi: boolean;
@@ -40,6 +42,23 @@ export interface AiAnalysis {
 }
 
 export type Importance = 'low' | 'medium' | 'high' | 'urgent';
+
+export interface DigestPoint {
+  text: string;
+  level: Importance;
+}
+
+/** 一个关键词的 AI 汇总简报 */
+export interface AiDigest {
+  headline: string;
+  overview: string;
+  points: DigestPoint[];
+  watch: string[];
+  /** 参与汇总的命中条数 */
+  covered: number;
+  generatedAt: number;
+  model?: string;
+}
 
 /** 监控/搜索命中的条目 */
 export interface WatchResult {
@@ -71,12 +90,26 @@ export interface Settings {
   openrouterKey: string;
   model: string;
   browserNotify: boolean;
+  /** 全局排除词(逗号/空格分隔),叠加在每个关键词自己的排除词之上 */
+  globalExclude: string;
+  /** 页面打开期间自动重新扫描的间隔(分钟),0 = 关闭 */
+  autoScanMinutes: number;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
   openrouterKey: '',
   model: 'deepseek/deepseek-v3.2',
   browserNotify: false,
+  globalExclude: '',
+  autoScanMinutes: 0,
 };
+
+/** 拼接全局排除词与关键词自己的排除词 */
+export function combinedExclude(kwExclude: string | undefined, settings: Settings): string | undefined {
+  return [settings.globalExclude, kwExclude]
+    .map((s) => s?.trim())
+    .filter(Boolean)
+    .join(',') || undefined;
+}
 
 export const IMPORTANCE_ORDER: Importance[] = ['urgent', 'high', 'medium', 'low'];
