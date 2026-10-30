@@ -5,6 +5,17 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/),
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.3.1] - 2026-10-30
+
+### 工程
+
+- 增加 `.nvmrc` 与 `engines.node >=22.12`，锁定与 CI 一致的 Node 版本；
+- 新增 `.github/workflows/ci.yml`：push / PR 自动执行 `npm ci`、类型检查、九榜快照完整性与生产构建；
+- 新增 `npm run typecheck` 与 `npm run check`；
+- Vite dev 固定 `5174`、preview 固定 `4173`，均开启 `strictPort`，端口冲突时明确报错；
+- PWA 增加 192/512/maskable PNG 图标与 iOS 180px apple-touch-icon，manifest 同步更新；
+- README 补充 Node 版本、固定端口与本地检查命令。
+
 ## [1.3.0] - 2026-10-30
 
 ### 新增

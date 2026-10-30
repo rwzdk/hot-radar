@@ -11,4 +11,12 @@ export default defineConfig({
   build: {
     target: 'es2020',
   },
+  server: {
+    port: 5174,
+    strictPort: true,
+  },
+  preview: {
+    port: 4173,
+    strictPort: true,
+  },
 });

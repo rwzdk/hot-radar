@@ -13,6 +13,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4-38BDF8?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![CI](https://github.com/rwzdk/hot-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/rwzdk/hot-radar/actions/workflows/ci.yml)
 [![在线体验](https://img.shields.io/badge/在线体验-qoder.website-D8452A)](https://hot-radar-j8vzdjdlheu.qoder.website)
 
 **在线体验:https://hot-radar-j8vzdjdlheu.qoder.website**
@@ -29,7 +30,7 @@
 - **AI 研判** —— 接入 OpenRouter 任意模型,对单条内容做相关度评分、真实性判断、重要度分级与一句话摘要;
 - **AI 简报** —— 把一次扫描的关键进展压缩成一份结构化简报:一句话结论、整体脉络、关键进展和接下来值得关注的信号;
 - **全网搜索** —— 不入库的即时聚合检索,支持平台多选、最近搜索、结果过滤与批量 AI 研判;
-- **PWA** —— 可安装到桌面/主屏,弱网环境可打开应用壳并查看已缓存的榜单;
+- **PWA** —— 可安装到桌面/主屏,含 192/512/maskable PNG 图标与 iOS apple-touch-icon,弱网环境可打开应用壳并查看已缓存的榜单;
 - **移动端可用** —— 桌面侧栏 + 手机底部导航,四页在 375px 宽度下完整可用;
 - **零后端** —— 没有服务器、没有数据库。监控记录跟着浏览器走,换设备时用备份导入导出即可。
 
@@ -47,19 +48,31 @@
 
 ## 快速开始
 
+需要 **Node.js 22.12+**（仓库带 `.nvmrc`，CI 使用 Node 22）。
+
 ```bash
 git clone https://github.com/rwzdk/hot-radar.git
 cd hot-radar
-npm install
-npm run dev        # http://localhost:5173
+npm ci
+npm run dev        # http://localhost:5174
 ```
 
 构建生产包:
 
 ```bash
 npm run build      # 产物在 dist/
-npm run preview    # 本地预览构建产物
+npm run preview    # http://localhost:4173 预览构建产物
 ```
+
+本地检查:
+
+```bash
+npm run typecheck  # TypeScript 类型检查
+npm run snapshot:check
+npm run check      # typecheck + 快照完整性 + 生产构建
+```
+
+`dev` 固定 `127.0.0.1:5174` 且 `strictPort`，端口被占用时会直接报错，不会静默换端口。
 
 ## 启用 AI 研判(可选)
 
