@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { WatchResult } from '../types';
 import { relativeTime } from '../lib/format';
 import {
@@ -17,11 +17,13 @@ export function ResultCard({
   onAnalyze,
   analyzing,
   isNew,
+  badge,
 }: {
   item: WatchResult;
   onAnalyze?: (item: WatchResult) => void;
   analyzing?: boolean;
   isNew?: boolean;
+  badge?: ReactNode;
 }) {
   const ai = item.ai;
   const suspicious = ai && !ai.isReal;
@@ -44,6 +46,7 @@ export function ResultCard({
           {/* 第一行:来源 + 标题 */}
           <div className="flex flex-wrap items-center gap-2">
             <SourceBadge source={item.source} />
+            {badge}
             {isNew && <Badge tone="accent">新</Badge>}
             {suspicious && (
               <Badge tone="danger">

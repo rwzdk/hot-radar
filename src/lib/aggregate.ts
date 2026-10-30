@@ -15,7 +15,7 @@ export function splitTerms(keyword: string): string[] {
 
 function matches(text: string, terms: string[]): boolean {
   const lower = text.toLowerCase();
-  return terms.some((t) => lower.includes(t));
+  return terms.some((term) => lower.includes(term.toLowerCase()));
 }
 
 /** 文本是否命中排除词(供榜单页等展示过滤使用) */
@@ -141,6 +141,10 @@ export interface BatchScanOptions {
   hnLimit?: number;
   /** 每个关键词各自的排除词,按关键词文本索引 */
   excludes?: Record<string, string | undefined>;
+  /** 自定义匹配词(关注点标签);缺省时用关键词分词 */
+  terms?: Record<string, string[]>;
+  /** 自定义 HN 查询语句;缺省时用索引文本 */
+  hnQueries?: Record<string, string>;
 }
 
 /**
@@ -157,9 +161,11 @@ export async function scanKeywords(
     Promise.all(
       boardIds.includes('hackernews')
         ? texts.map((text) =>
-            hnSearch(text, { byDate: true, withinDays: 7, limit: opts.hnLimit ?? 15 }).catch(
-              () => [] as WatchResult[],
-            ),
+            hnSearch(opts.hnQueries?.[text] ?? text, {
+              byDate: true,
+              withinDays: 7,
+              limit: opts.hnLimit ?? 15,
+            }).catch(() => [] as WatchResult[]),
           )
         : texts.map(() => Promise.resolve([] as WatchResult[])),
     ),
@@ -167,7 +173,7 @@ export async function scanKeywords(
 
   const outcomes: Record<string, ScanOutcome> = {};
   texts.forEach((text, index) => {
-    const terms = splitTerms(text);
+    const terms = opts.terms?.[text] ?? splitTerms(text);
     const excludeTerms = opts.excludes?.[text]?.trim() ? splitTerms(opts.excludes[text]!) : [];
     const hit = (value: string) => matches(value, terms) && !matches(value, excludeTerms);
 

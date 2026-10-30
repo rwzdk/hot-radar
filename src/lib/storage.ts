@@ -4,6 +4,8 @@ import type {
   AiDigest,
   BoardId,
   DigestPoint,
+  Focus,
+  FocusHit,
   Importance,
   Keyword,
   NoticeEvent,
@@ -128,9 +130,67 @@ function sanitizeNotices(value: unknown): NoticeEvent[] | null {
       at: finiteNumber(entry.at) ?? Date.now(),
       read: entry.read === true,
       keywordId: shortText(entry.keywordId, 80),
+      focusId: shortText(entry.focusId, 80),
     });
   }
   return list;
+}
+
+function sanitizeFocusList(value: unknown): Focus[] | null {
+  if (!Array.isArray(value)) return null;
+  const seen = new Set<string>();
+  const list: Focus[] = [];
+  for (const entry of value.slice(0, 100)) {
+    if (!isRecord(entry)) continue;
+    const name = shortText(entry.name, 80);
+    const description = shortText(entry.description, 500);
+    if (!name || !description) continue;
+    let id = shortText(entry.id, 80) ?? uid();
+    if (seen.has(id)) id = uid();
+    seen.add(id);
+    const tags = Array.isArray(entry.tags)
+      ? [...new Set(entry.tags.slice(0, 12).flatMap((tag) => {
+          const text = shortText(tag, 40);
+          return text ? [text] : [];
+        }))]
+      : [];
+    const sources = Array.isArray(entry.sources)
+      ? entry.sources.filter((source): source is BoardId =>
+          BOARD_IDS.includes(source as BoardId),
+        )
+      : [];
+    const minScore = Math.min(100, Math.max(0, Math.round(finiteNumber(entry.minScore) ?? 70)));
+    list.push({
+      id,
+      name,
+      description,
+      tags,
+      exclude: shortText(entry.exclude, 200),
+      sources: sources.length > 0 ? sources : BOARD_IDS,
+      minScore,
+      autoAi: entry.autoAi !== false,
+      paused: entry.paused === true,
+      createdAt: finiteNumber(entry.createdAt) ?? Date.now(),
+      lastScanAt: finiteNumber(entry.lastScanAt),
+      tagsUpdatedAt: finiteNumber(entry.tagsUpdatedAt),
+    });
+  }
+  return list;
+}
+
+function sanitizeFocusHitList(value: unknown, focusId: string): FocusHit[] | null {
+  if (!Array.isArray(value)) return null;
+  return value.slice(0, 200).flatMap((entry) => {
+    const base = sanitizeWatchItem(entry);
+    if (!base || !isRecord(entry)) return [];
+    return [
+      {
+        ...base,
+        focusId: shortText(entry.focusId, 80) ?? focusId,
+        matchedBy: entry.matchedBy === 'tag' ? 'tag' : 'ai',
+      },
+    ];
+  });
 }
 
 function sanitizeDigest(value: unknown): AiDigest | null {
@@ -329,8 +389,15 @@ export function importAll(json: string): boolean {
       } else if (key === 'keywords') {
         const list = sanitizeKeywords(value);
         if (list) saveJson(key, list);
+      } else if (key === 'focuses') {
+        const list = sanitizeFocusList(value);
+        if (list) saveJson(key, list);
       } else if (key === 'notices') {
         const list = sanitizeNotices(value);
+        if (list) saveJson(key, list);
+      } else if (key.startsWith('focus:')) {
+        const focusId = key.slice('focus:'.length);
+        const list = sanitizeFocusHitList(value, focusId);
         if (list) saveJson(key, list);
       } else if (key === 'search:recent') {
         const list = sanitizeRecentSearches(value);
@@ -375,6 +442,19 @@ export function watchKey(keywordId: string): string {
 /** 读取某个关键词的历史结果 */
 export function loadWatch(keywordId: string): import('../types').WatchResult[] {
   return loadJson<import('../types').WatchResult[]>(watchKey(keywordId), []);
+}
+
+/** 关注点历史与 AI 评分缓存的存储键 */
+export function focusKey(focusId: string): string {
+  return `focus:${focusId}`;
+}
+
+export function focusCacheKey(focusId: string): string {
+  return `focuscache:${focusId}`;
+}
+
+export function loadFocusResults(focusId: string): FocusHit[] {
+  return loadJson<FocusHit[]>(focusKey(focusId), []);
 }
 
 export function useReload(callback: () => void) {

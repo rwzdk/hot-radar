@@ -85,6 +85,32 @@ export interface WatchResult {
   ai?: AiAnalysis;
 }
 
+/** 关注点:用自然语言描述兴趣,由 AI 提取标签并精排 */
+export interface Focus {
+  id: string;
+  name: string;
+  description: string;
+  /** AI 从描述中提取的关键词/别名,用于本地粗筛 */
+  tags: string[];
+  exclude?: string;
+  /** 参与扫描的平台 */
+  sources: BoardId[];
+  /** 0-100,达到该分数才入库/通知 */
+  minScore: number;
+  /** 扫描时是否启用 AI 精排 */
+  autoAi: boolean;
+  paused: boolean;
+  createdAt: number;
+  lastScanAt?: number;
+  tagsUpdatedAt?: number;
+}
+
+/** 关注点命中的内容;AI 精排结果复用 ai 字段 */
+export interface FocusHit extends WatchResult {
+  focusId: string;
+  matchedBy: 'tag' | 'ai';
+}
+
 /** 应用内通知事件 */
 export interface NoticeEvent {
   id: string;
@@ -93,6 +119,7 @@ export interface NoticeEvent {
   at: number;
   read: boolean;
   keywordId?: string;
+  focusId?: string;
 }
 
 export interface Settings {

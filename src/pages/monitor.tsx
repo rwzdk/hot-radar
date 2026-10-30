@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type {
   AiDigest,
   BoardId,
+  Focus,
   Importance,
   Keyword,
   WatchResult,
@@ -16,7 +17,15 @@ import {
 } from '../lib/aggregate';
 import { analyzeBatch, analyzeDigest, analyzeItem, type BatchProgress } from '../lib/ai';
 import {
+  applyFocusCandidates,
+  buildFocusTerms,
+  clearFocusCache,
+  focusScanKey,
+} from '../lib/focus';
+import {
   downloadFile,
+  focusKey,
+  loadFocusResults,
   loadWatch,
   saveJson,
   uid,
@@ -37,6 +46,8 @@ import {
   Toggle,
 } from '../components/ui';
 import { ResultCard } from '../components/result-card';
+import { FocusEditor } from '../components/focus-editor';
+import { FocusPanel } from '../components/focus-panel';
 import {
   DownloadIcon,
   FileTextIcon,
@@ -51,6 +62,46 @@ import {
 
 const SELECT_CLS =
   'h-8 cursor-pointer rounded-btn border-[3px] border-ink bg-surface px-2.5 text-[13px] font-bold text-ink-soft outline-none transition-all duration-100 hover:-translate-y-px hover:bg-paper hover:text-ink hover:shadow-toon-sm focus:shadow-toon-sm';
+
+function ModeSwitch({
+  focusMode,
+  navigate,
+}: {
+  focusMode: boolean;
+  navigate: (to: string) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <button
+        type="button"
+        onClick={() => navigate('monitor')}
+        aria-pressed={!focusMode}
+        className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border-toon px-4 py-1.5 text-[13px] font-black transition-all duration-100 ${
+          !focusMode
+            ? '-rotate-1 bg-yellow text-ink shadow-toon-sm'
+            : 'bg-surface text-ink-soft shadow-toon-sm hover:-translate-x-px hover:-translate-y-px hover:bg-paper hover:text-ink'
+        }`}
+      >
+        <SearchIcon className="size-4" /> 关键词监控
+      </button>
+      <button
+        type="button"
+        onClick={() => navigate('monitor?mode=focus')}
+        aria-pressed={focusMode}
+        className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border-toon px-4 py-1.5 text-[13px] font-black transition-all duration-100 ${
+          focusMode
+            ? '-rotate-1 bg-accent text-white shadow-toon-sm'
+            : 'bg-surface text-ink-soft shadow-toon-sm hover:-translate-x-px hover:-translate-y-px hover:bg-paper hover:text-ink'
+        }`}
+      >
+        <SparkIcon className="size-4" /> 关注点推送
+      </button>
+      <span className="ml-auto hidden text-[11px] font-bold text-muted sm:inline">
+        {focusMode ? '自然语言描述 + AI 精排' : '精确关键词匹配 + AI 研判'}
+      </span>
+    </div>
+  );
+}
 
 function boardName(source: string): string {
   return BOARDS.find((board) => board.id === source)?.name ?? source;
@@ -591,41 +642,62 @@ export default function MonitorPage({
   navigate: (to: string) => void;
 }) {
   const [keywords, setKeywords] = useLocalState<Keyword[]>('keywords', []);
+  const [focuses, setFocuses] = useLocalState<Focus[]>('focuses', []);
   const [settings] = useSettings();
   const { push } = useNotices();
   const [draft, setDraft] = useState('');
   const [counts, setCounts] = useState<Record<string, number>>({});
+  const [focusCounts, setFocusCounts] = useState<Record<string, number>>({});
+  const [editingFocus, setEditingFocus] = useState<Focus | 'new' | null>(null);
   const [autoScanAt, setAutoScanAt] = useState(0);
 
   const keywordsRef = useRef(keywords);
   keywordsRef.current = keywords;
+  const focusesRef = useRef(focuses);
+  focusesRef.current = focuses;
   const autoScanningRef = useRef(false);
 
   const valid = params.kw && keywords.some((k) => k.id === params.kw);
   const selectedId = valid ? params.kw : keywords[0]?.id;
   const selected = keywords.find((k) => k.id === selectedId);
 
-  /* 页面打开期间的自动扫描:热榜一轮共享拉取,各关键词只做匹配与 HN 搜索 */
+  const focusMode = Boolean(params.focus) || params.mode === 'focus';
+  const validFocus = params.focus && focuses.some((f) => f.id === params.focus);
+  const selectedFocusId = validFocus ? params.focus : focuses[0]?.id;
+  const selectedFocus = focuses.find((f) => f.id === selectedFocusId);
+
+  /* 页面打开期间的自动扫描:关键词与关注点共享一轮热榜拉取,关注点再走 AI 精排 */
   useEffect(() => {
     const minutes = settings.autoScanMinutes;
     if (!minutes) return;
 
     async function tick() {
       if (document.visibilityState !== 'visible' || autoScanningRef.current) return;
-      const list = keywordsRef.current.filter((k) => !k.paused);
-      if (list.length === 0) return;
+      const activeKeywords = keywordsRef.current.filter((k) => !k.paused);
+      const activeFocuses = focusesRef.current.filter((f) => !f.paused);
+      if (activeKeywords.length === 0 && activeFocuses.length === 0) return;
       autoScanningRef.current = true;
       try {
-        const outcomes = await scanKeywords(
-          list.map((k) => k.text),
-          {
-            excludes: Object.fromEntries(
-              list.map((k) => [k.text, combinedExclude(k.exclude, settings)]),
-            ),
-          },
+        const focusKeys = activeFocuses.map((focus) => focusScanKey(focus.id));
+        const texts = [...activeKeywords.map((kw) => kw.text), ...focusKeys];
+        const terms = Object.fromEntries(
+          activeFocuses.map((focus) => [focusScanKey(focus.id), buildFocusTerms(focus)]),
         );
+        const hnQueries = Object.fromEntries(
+          activeFocuses.map((focus) => [focusScanKey(focus.id), focus.name]),
+        );
+        const excludes = Object.fromEntries([
+          ...activeKeywords.map((kw) => [kw.text, combinedExclude(kw.exclude, settings)]),
+          ...activeFocuses.map((focus) => [
+            focusScanKey(focus.id),
+            combinedExclude(focus.exclude, settings),
+          ]),
+        ]);
+
+        const outcomes = await scanKeywords(texts, { terms, hnQueries, excludes });
         const now = Date.now();
-        for (const kw of list) {
+
+        for (const kw of activeKeywords) {
           const outcome = outcomes[kw.text];
           if (!outcome) continue;
           const { merged, added } = mergeHistory(loadWatch(kw.id), outcome.results);
@@ -645,6 +717,30 @@ export default function MonitorPage({
             notifyBrowser(`热点雷达 · ${kw.text}`, `发现 ${added.length} 条新内容`);
           }
         }
+
+        for (const focus of activeFocuses) {
+          const outcome = outcomes[focusScanKey(focus.id)];
+          if (!outcome) continue;
+          const applied = await applyFocusCandidates(focus, outcome.results, settings);
+          setFocuses((prev) =>
+            prev.map((f) => (f.id === focus.id ? { ...f, lastScanAt: now } : f)),
+          );
+          if (applied.added.length > 0) {
+            push({
+              title: `【关注点】${focus.name} 发现 ${applied.added.length} 条`,
+              body: applied.added
+                .slice(0, 3)
+                .map((item) => item.title.slice(0, 30))
+                .join(' / '),
+              focusId: focus.id,
+            });
+            notifyBrowser(
+              `热点雷达 · ${focus.name}`,
+              `关注点发现 ${applied.added.length} 条新内容`,
+            );
+          }
+        }
+
         setAutoScanAt(now);
       } catch {
         /* 自动扫描失败静默,等待下个周期 */
@@ -662,7 +758,7 @@ export default function MonitorPage({
       window.clearInterval(timer);
       document.removeEventListener('visibilitychange', onVisible);
     };
-  }, [settings, push, setKeywords]);
+  }, [settings, push, setKeywords, setFocuses]);
 
   function addKeyword() {
     const text = draft.trim();
@@ -695,8 +791,173 @@ export default function MonitorPage({
     if (selectedId === id) navigate('monitor');
   }
 
+  function saveFocus(next: Focus) {
+    setFocuses((list) => {
+      const exists = list.some((focus) => focus.id === next.id);
+      return exists ? list.map((focus) => (focus.id === next.id ? next : focus)) : [next, ...list];
+    });
+    setEditingFocus(null);
+    setFocusCounts((prev) => ({
+      ...prev,
+      [next.id]: loadFocusResults(next.id).length,
+    }));
+    navigate(`monitor?focus=${next.id}`);
+  }
+
+  function updateFocus(id: string, patch: Partial<Focus>) {
+    setFocuses((list) =>
+      list.map((focus) => (focus.id === id ? { ...focus, ...patch } : focus)),
+    );
+  }
+
+  function deleteFocus(id: string) {
+    if (!confirm('删除该关注点及其全部历史?')) return;
+    removeKey(focusKey(id));
+    removeKey(`digest:focus:${id}`);
+    clearFocusCache(id);
+    setFocuses((list) => list.filter((focus) => focus.id !== id));
+    if (editingFocus !== 'new' && editingFocus?.id === id) setEditingFocus(null);
+    if (selectedFocusId === id) navigate('monitor?mode=focus');
+  }
+
+  if (focusMode) {
+    return (
+      <div className="grid animate-rise gap-4 lg:grid-cols-[270px_1fr]">
+        <div className="lg:col-span-2">
+          <ModeSwitch focusMode navigate={navigate} />
+        </div>
+
+        <div className="space-y-3">
+          <Card className="p-3">
+            <Button
+              variant="primary"
+              className="w-full"
+              onClick={() => setEditingFocus('new')}
+            >
+              <PlusIcon className="size-4" /> 新建关注点
+            </Button>
+            <p className="mt-2 text-[11px] font-semibold leading-relaxed text-muted">
+              用一句自然语言描述兴趣；标签留空时保存会调用一次 AI 提取。
+            </p>
+          </Card>
+
+          <Card className="p-1.5">
+            {focuses.length === 0 ? (
+              <p className="px-4 py-8 text-center text-[13px] font-semibold leading-relaxed text-muted">
+                还没有关注点
+                <br />
+                新建一个，让 AI 帮你盯热点
+              </p>
+            ) : (
+              focuses.map((focus) => {
+                const on = focus.id === selectedFocusId && !editingFocus;
+                const count = focusCounts[focus.id] ?? loadFocusResults(focus.id).length;
+                return (
+                  <div
+                    key={focus.id}
+                    className={`group flex cursor-pointer items-center gap-2 rounded-nav border-[3px] border-transparent px-3 py-2.5 transition-all duration-100 ${
+                      on ? '-rotate-1 border-ink bg-yellow shadow-toon-sm' : 'hover:bg-paper'
+                    }`}
+                    onClick={() => {
+                      setEditingFocus(null);
+                      navigate(`monitor?focus=${focus.id}`);
+                    }}
+                  >
+                    <span
+                      className={`size-2.5 shrink-0 rounded-blob-3 ${
+                        focus.paused ? 'bg-muted' : on ? 'bg-accent' : 'bg-teal'
+                      }`}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[13px] font-extrabold text-ink">{focus.name}</p>
+                      <p className="font-mono text-[10px] font-bold text-muted">
+                        {focus.paused ? '已暂停' : `≥ ${focus.minScore} 分`} · {count} 条
+                        {focus.lastScanAt ? ` · ${relativeTime(focus.lastScanAt)}` : ''}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        updateFocus(focus.id, { paused: !focus.paused });
+                      }}
+                      className="cursor-pointer rounded p-1 text-muted transition-colors hover:bg-paper hover:text-ink"
+                      title={focus.paused ? '恢复监控' : '暂停监控'}
+                      aria-label={focus.paused ? '恢复关注点' : '暂停关注点'}
+                    >
+                      {focus.paused ? <PlayIcon className="size-3.5" /> : <PauseIcon className="size-3.5" />}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        deleteFocus(focus.id);
+                      }}
+                      className="cursor-pointer rounded p-1 text-muted transition-colors hover:bg-accent-soft hover:text-danger"
+                      title="删除关注点"
+                      aria-label="删除关注点"
+                    >
+                      <TrashIcon className="size-3.5" />
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </Card>
+
+          {settings.autoScanMinutes > 0 && focuses.some((focus) => !focus.paused) && (
+            <p className="px-1 text-[11px] font-bold leading-relaxed text-muted">
+              自动扫描:每 {settings.autoScanMinutes} 分钟
+              {autoScanAt ? ` · 上次 ${clockTime(autoScanAt)}` : ' · 本页打开期间生效'}
+              <br />
+              关注点只精排新增候选，相同内容不重复扣费。
+            </p>
+          )}
+        </div>
+
+        <div className="min-w-0">
+          {editingFocus ? (
+            <FocusEditor
+              focus={editingFocus === 'new' ? null : editingFocus}
+              settings={settings}
+              onSave={saveFocus}
+              onCancel={() => setEditingFocus(null)}
+            />
+          ) : selectedFocus ? (
+            <FocusPanel
+              key={selectedFocus.id}
+              focus={selectedFocus}
+              settings={settings}
+              onUpdate={(patch) => updateFocus(selectedFocus.id, patch)}
+              onEdit={() => setEditingFocus(selectedFocus)}
+              onCountChange={(count) =>
+                setFocusCounts((prev) =>
+                  prev[selectedFocus.id] === count
+                    ? prev
+                    : { ...prev, [selectedFocus.id]: count },
+                )
+              }
+            />
+          ) : (
+            <Card>
+              <EmptyState
+                icon={<SparkIcon className="size-7" />}
+                title="选择或新建一个关注点"
+                desc="用自然语言描述你关心什么，系统会先标签粗筛，再对新增候选做 AI 精排"
+              />
+            </Card>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="grid animate-rise gap-4 lg:grid-cols-[270px_1fr]">
+      <div className="lg:col-span-2">
+        <ModeSwitch focusMode={false} navigate={navigate} />
+      </div>
+
       {/* 关键词列表 */}
       <div className="space-y-3">
         <Card className="p-3">

@@ -125,7 +125,10 @@ function NoticeBell({ navigate }: { navigate: (to: string) => void }) {
                   type="button"
                   onClick={() => {
                     markRead(n.id);
-                    if (n.keywordId) {
+                    if (n.focusId) {
+                      setOpen(false);
+                      navigate(`monitor?focus=${n.focusId}`);
+                    } else if (n.keywordId) {
                       setOpen(false);
                       navigate(`monitor?kw=${n.keywordId}`);
                     }
