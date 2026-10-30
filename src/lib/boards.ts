@@ -62,9 +62,9 @@ function isRetryable(error: unknown): boolean {
   return error instanceof Error && /HTTP 5\d\d/.test(error.message);
 }
 
-async function getJsonOnce<T>(url: string): Promise<T> {
+async function getJsonOnce<T>(url: string, timeoutMs = REQUEST_TIMEOUT): Promise<T> {
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT);
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
     const res = await fetch(url, { signal: ctrl.signal, headers: { Accept: 'application/json' } });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -75,13 +75,13 @@ async function getJsonOnce<T>(url: string): Promise<T> {
 }
 
 /** 网络错误/5xx 重试一次;429 直接失败,交给快照兜底 */
-async function getJson<T>(url: string): Promise<T> {
+async function getJson<T>(url: string, timeoutMs = REQUEST_TIMEOUT): Promise<T> {
   try {
-    return await getJsonOnce<T>(url);
+    return await getJsonOnce<T>(url, timeoutMs);
   } catch (error) {
     if (!isRetryable(error)) throw error;
     await sleep(RETRY_DELAY);
-    return getJsonOnce<T>(url);
+    return getJsonOnce<T>(url, timeoutMs);
   }
 }
 
@@ -134,8 +134,12 @@ function toBoardItem(it: Api60sItem, source: BoardId): BoardItem | null {
   return { title, url, source };
 }
 
-async function fetchFrom60s(path: string, source: BoardId): Promise<BoardItem[]> {
-  const json = await getJson<Api60sResponse>(API_60S + path);
+async function fetchFrom60s(
+  path: string,
+  source: BoardId,
+  timeoutMs = REQUEST_TIMEOUT,
+): Promise<BoardItem[]> {
+  const json = await getJson<Api60sResponse>(API_60S + path, timeoutMs);
   if (json.code !== 200 || !Array.isArray(json.data)) {
     throw new Error(`60s API 返回 code=${json.code}`);
   }
@@ -250,11 +254,33 @@ export function loadBoardCache(id: BoardId): BoardFetchResult | null {
     const raw = localStorage.getItem(BOARD_CACHE_PREFIX + id);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as BoardFetchResult;
-    if (!parsed || parsed.from !== 'live' || !Array.isArray(parsed.items)) return null;
+    if (
+      !parsed ||
+      parsed.from !== 'live' ||
+      !Array.isArray(parsed.items) ||
+      parsed.items.length === 0
+    ) {
+      return null;
+    }
     return parsed;
   } catch {
     return null;
   }
+}
+
+/** 把仓库快照转换成可以直接渲染的单榜结果;只作为占位,不写入 live 缓存 */
+export function snapshotBoardResult(
+  snap: SnapshotFile | null,
+  id: BoardId,
+): BoardFetchResult | null {
+  const items = snap?.boards[id];
+  if (!snap || !items?.length) return null;
+  return {
+    items: items.map((item) => ({ ...item, source: id })),
+    from: 'snapshot',
+    fetchedAt: snap.boardAt?.[id] ?? snap.generatedAt,
+    loadedAt: 0,
+  };
 }
 
 function saveBoardCache(id: BoardId, result: BoardFetchResult): void {
@@ -281,8 +307,16 @@ export function loadSnapshot(): Promise<SnapshotFile | null> {
   return snapshotCache;
 }
 
+export interface FetchBoardOptions {
+  timeoutMs?: number;
+}
+
 /** 拉取单个榜单:实时优先,失败时回退快照 */
-export async function fetchBoard(id: BoardId): Promise<BoardFetchResult> {
+export async function fetchBoard(
+  id: BoardId,
+  options: FetchBoardOptions = {},
+): Promise<BoardFetchResult> {
+  const timeoutMs = options.timeoutMs ?? REQUEST_TIMEOUT;
   const meta = BOARDS.find((b) => b.id === id)!;
   if (id === 'hackernews') {
     try {
@@ -297,7 +331,7 @@ export async function fetchBoard(id: BoardId): Promise<BoardFetchResult> {
     }
   }
   try {
-    const items = await fetchFrom60s(meta.api!, id);
+    const items = await fetchFrom60s(meta.api!, id, timeoutMs);
     if (items.length === 0) throw new Error('空数据');
     const now = Date.now();
     const result = { items, from: 'live' as const, fetchedAt: now, loadedAt: now };
@@ -332,19 +366,31 @@ async function fallbackSnapshot(id: BoardId): Promise<BoardFetchResult | null> {
   return null;
 }
 
-/** 并行拉取多个榜单,最多 2 并发并留出间隔,降低接口限流概率 */
-export async function fetchBoards(ids: BoardId[]): Promise<Record<BoardId, BoardFetchResult>> {
+export interface FetchBoardsOptions {
+  concurrency?: number;
+  gapMs?: number;
+  timeoutMs?: number;
+}
+
+/** 顺序/小并发拉取多个榜单,默认单并发 + 间隔,尽量避开 60s 的突发限流 */
+export async function fetchBoards(
+  ids: BoardId[],
+  options: FetchBoardsOptions = {},
+): Promise<Record<BoardId, BoardFetchResult>> {
+  const concurrency = Math.max(1, options.concurrency ?? 1);
+  const gapMs = Math.max(0, options.gapMs ?? 400);
+  const timeoutMs = options.timeoutMs ?? REQUEST_TIMEOUT;
   const result = {} as Record<BoardId, BoardFetchResult>;
   let cursor = 0;
 
   async function worker() {
     while (cursor < ids.length) {
       const id = ids[cursor++];
-      result[id] = await fetchBoard(id);
-      if (cursor < ids.length) await sleep(150);
+      result[id] = await fetchBoard(id, { timeoutMs });
+      if (cursor < ids.length) await sleep(gapMs);
     }
   }
 
-  await Promise.all(Array.from({ length: Math.min(2, ids.length) }, worker));
+  await Promise.all(Array.from({ length: Math.min(concurrency, ids.length) }, worker));
   return result;
 }

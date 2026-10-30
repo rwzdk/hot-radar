@@ -7,6 +7,7 @@ import {
   fetchBoards,
   loadBoardCache,
   loadSnapshot,
+  snapshotBoardResult,
   type BoardFetchResult,
   type SnapshotFile,
 } from '../lib/boards';
@@ -19,6 +20,7 @@ import { ExternalIcon, FlameIcon, RefreshIcon } from '../components/icons';
 /** 会话级榜单缓存,切换标签不重复请求 */
 const cache = new Map<BoardId, BoardFetchResult>();
 const STALE_MS = 5 * 60_000;
+const SNAPSHOT_RETRY_MS = 2 * 60_000;
 const TREND_MAX_AGE = 7 * 86_400_000;
 
 /** 缓存新鲜度时间戳(loadedAt 优先,兼容旧结构) */
@@ -26,7 +28,12 @@ function cacheAt(c?: BoardFetchResult | null): number {
   return c ? (c.loadedAt ?? c.fetchedAt) : 0;
 }
 
-function useBoard(id: BoardId) {
+/** 实时结果缓存 5 分钟;快照兜底结果 2 分钟后再尝试实时 */
+function cacheTtl(c?: BoardFetchResult | null): number {
+  return c?.from === 'live' ? STALE_MS : SNAPSHOT_RETRY_MS;
+}
+
+function useBoard(id: BoardId, snap: SnapshotFile | null) {
   // 模块缓存未命中时从 localStorage 补水,二次访问无需等网络
   if (!cache.has(id)) {
     const local = loadBoardCache(id);
@@ -40,22 +47,36 @@ function useBoard(id: BoardId) {
   const activeId = useRef(id);
   activeId.current = id;
 
-  // 切换平台时立即丢掉上一个榜的数据,避免标题已切换、列表还是旧榜
-  const state = slot.id === id ? slot.result : (cache.get(id) ?? null);
+  // 切换平台时立即丢掉上一个榜的数据;没有 live 缓存时先用仓库快照占位
+  const snapshotState = snapshotBoardResult(snap, id);
+  const live = slot.id === id ? slot.result : null;
+  const cached = cache.get(id);
+  const state =
+    (live && live.items.length > 0 ? live : null) ??
+    (cached && cached.items.length > 0 ? cached : null) ??
+    snapshotState ??
+    live ??
+    cached ??
+    null;
 
   const load = useCallback(
     async (force = false) => {
-      const cached = cache.get(id);
-      if (!force && cached && Date.now() - cacheAt(cached) < STALE_MS) {
+      const cachedValue = cache.get(id);
+      if (
+        !force &&
+        cachedValue &&
+        cachedValue.items.length > 0 &&
+        Date.now() - cacheAt(cachedValue) < cacheTtl(cachedValue)
+      ) {
         if (activeId.current === id) {
-          setSlot({ id, result: cached });
+          setSlot({ id, result: cachedValue });
           setLoading(false);
         }
         return;
       }
       if (activeId.current === id) setLoading(true);
       try {
-        const result = await fetchBoard(id);
+        const result = await fetchBoard(id, { timeoutMs: 20_000 });
         cache.set(id, result);
         if (activeId.current === id) setSlot({ id, result });
       } finally {
@@ -71,8 +92,14 @@ function useBoard(id: BoardId) {
 
   useEffect(() => {
     const refreshIfStale = () => {
-      const cached = cache.get(id);
-      if (!cached || Date.now() - cacheAt(cached) >= STALE_MS) void load(false);
+      const cachedValue = cache.get(id);
+      if (
+        !cachedValue ||
+        cachedValue.items.length === 0 ||
+        Date.now() - cacheAt(cachedValue) >= cacheTtl(cachedValue)
+      ) {
+        void load(false);
+      }
     };
     const onVisible = () => {
       if (document.visibilityState === 'visible') refreshIfStale();
@@ -185,7 +212,7 @@ function SkeletonRows() {
 
 /* ============ 聚合总览:各源 Top 10 一屏看完 ============ */
 
-function AggregateView() {
+function AggregateView({ snap }: { snap: SnapshotFile | null }) {
   const [results, setResults] = useState<Partial<Record<BoardId, BoardFetchResult>>>(() => {
     const seed: Partial<Record<BoardId, BoardFetchResult>> = {};
     for (const b of BOARDS) {
@@ -194,7 +221,9 @@ function AggregateView() {
         if (local) cache.set(b.id, local);
       }
       const c = cache.get(b.id);
-      if (c) seed[b.id] = c;
+      const s = snapshotBoardResult(snap, b.id);
+      if (c && c.items.length > 0) seed[b.id] = c;
+      else if (s) seed[b.id] = s;
     }
     return seed;
   });
@@ -202,17 +231,43 @@ function AggregateView() {
   const [settings] = useSettings();
   const exclude = settings.globalExclude;
 
+  // 仓库快照到达后,先补进还没有数据的源,避免默认聚合页出现空白/失败
+  useEffect(() => {
+    if (!snap) return;
+    setResults((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      for (const b of BOARDS) {
+        const s = snapshotBoardResult(snap, b.id);
+        const existing = next[b.id];
+        if (s && (!existing || existing.items.length === 0)) {
+          next[b.id] = s;
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [snap]);
+
   const load = useCallback(async (force = false) => {
-    // 只拉过期/缺数据的源,复用 fetchBoards 的限流器(2 并发 + 间隔)
+    // 只拉过期/缺数据的源;单并发 + 700ms 间隔,避免 60s 突发限流
     const stale = BOARDS.map((b) => b.id).filter((id) => {
       if (force) return true;
       const c = cache.get(id);
-      return !c || c.items.length === 0 || Date.now() - cacheAt(c) >= STALE_MS;
+      return (
+        !c ||
+        c.items.length === 0 ||
+        Date.now() - cacheAt(c) >= cacheTtl(c)
+      );
     });
     if (stale.length === 0) return;
     setLoading(true);
     try {
-      const fetched = await fetchBoards(stale);
+      const fetched = await fetchBoards(stale, {
+        concurrency: 1,
+        gapMs: 700,
+        timeoutMs: 20_000,
+      });
       const next: Partial<Record<BoardId, BoardFetchResult>> = {};
       for (const id of stale) {
         const c = fetched[id];
@@ -235,7 +290,11 @@ function AggregateView() {
     const refreshIfStale = () => {
       const anyStale = BOARDS.some((b) => {
         const c = cache.get(b.id);
-        return !c || c.items.length === 0 || Date.now() - cacheAt(c) >= STALE_MS;
+        return (
+          !c ||
+          c.items.length === 0 ||
+          Date.now() - cacheAt(c) >= cacheTtl(c)
+        );
       });
       if (anyStale) void load(false);
     };
@@ -253,6 +312,9 @@ function AggregateView() {
   const liveCount = Object.values(results).filter(
     (r) => r?.from === 'live' && r.items.length > 0,
   ).length;
+  const snapshotCount = Object.values(results).filter(
+    (r) => r?.from === 'snapshot' && r.items.length > 0,
+  ).length;
 
   return (
     <Card>
@@ -263,7 +325,8 @@ function AggregateView() {
         <span className="text-[17px] font-black">聚合总览</span>
         <span className="font-mono text-[10px] font-black tracking-[2px] text-muted">ALL-IN-ONE</span>
         <span className="font-mono text-xs font-extrabold text-muted" aria-live="polite">
-          {liveCount}/{BOARDS.length} 源
+          实时 {liveCount}/{BOARDS.length}
+          {snapshotCount > 0 ? ` · 快照 ${snapshotCount}` : ''}
         </span>
         <Button variant="secondary" size="sm" className="ml-auto" onClick={() => void load(true)} disabled={loading}>
           {loading ? <Spinner className="size-3.5" /> : <RefreshIcon className="size-3.5" />}
@@ -327,7 +390,7 @@ export default function BoardsPage() {
   const [settings] = useSettings();
   // 聚合页在后台用第一个榜预热 useBoard,切到单榜即秒开
   const activeBoard: BoardId = active === 'all' ? 'weibo' : active;
-  const { state, loading, reload } = useBoard(activeBoard);
+  const { state, loading, reload } = useBoard(activeBoard, snap);
 
   const excludeActive = settings.globalExclude.trim() !== '';
   const meta = boardMeta(activeBoard);
@@ -456,12 +519,14 @@ export default function BoardsPage() {
           <span className="-rotate-2 shrink-0 rounded-lg border-[2.5px] border-ink bg-yellow px-2 py-0.5 text-[11px] font-black text-ink">
             提示
           </span>
-          实时接口暂时不可用,当前展示最近一次快照(每日自动更新)。
+          {loading
+            ? '正在刷新实时数据,当前先展示最近一次快照。'
+            : '实时接口暂时不可用,当前展示最近一次快照(每日自动更新)。'}
         </div>
       )}
 
       {/* 聚合总览 */}
-      {active === 'all' && <AggregateView />}
+      {active === 'all' && <AggregateView snap={snap} />}
 
       {/* 单个榜单 */}
       {active !== 'all' && (

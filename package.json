@@ -1,14 +1,15 @@
 {
   "name": "hot-radar",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.2.1",
   "type": "module",
   "description": "热点雷达 —— 纯前端的多平台热榜聚合与 AI 关键词监控面板",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "snapshot": "node scripts/snapshot.mjs"
+    "snapshot": "node scripts/snapshot.mjs",
+    "snapshot:check": "node scripts/check-snapshot.mjs"
   },
   "dependencies": {
     "react": "^19.2.0",

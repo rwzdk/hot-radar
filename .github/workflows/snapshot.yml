@@ -33,6 +33,9 @@ jobs:
       - name: 抓取各平台热榜快照
         run: node scripts/snapshot.mjs
 
+      - name: 校验九榜快照完整性
+        run: node scripts/check-snapshot.mjs
+
       - name: 提交快照
         run: |
           if git diff --quiet public/data/snapshot.json; then

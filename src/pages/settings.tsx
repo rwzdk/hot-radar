@@ -11,6 +11,7 @@ import {
   DownloadIcon,
   KeyIcon,
   RefreshIcon,
+  ShieldIcon,
   TargetIcon,
   UploadIcon,
   XIcon,
@@ -19,7 +20,7 @@ import {
 interface SourceCheck {
   id: string;
   name: string;
-  status: 'pending' | 'ok' | 'fail';
+  status: 'pending' | 'ok' | 'warn' | 'fail';
   count?: number;
   ms?: number;
   error?: string;
@@ -308,17 +309,20 @@ function SettingsSourcesCard() {
       try {
         const r = await fetchBoard(b.id);
         const live = r.from === 'live' && r.items.length > 0;
+        const fallback = r.from === 'snapshot' && r.items.length > 0;
         setChecks((prev) =>
           (prev ?? []).map((c) =>
             c.id === b.id
               ? {
                   ...c,
-                  status: live ? 'ok' : 'fail',
+                  status: live ? 'ok' : fallback ? 'warn' : 'fail',
                   count: r.items.length,
                   ms: Math.round(performance.now() - t0),
                   error: live
                     ? undefined
-                    : (r.error ?? (r.from === 'snapshot' ? '实时失败,已回退快照' : '空数据')),
+                    : fallback
+                      ? '实时失败,快照可用'
+                      : (r.error ?? '空数据'),
                 }
               : c,
           ),
@@ -358,11 +362,17 @@ function SettingsSourcesCard() {
             >
               {c.status === 'pending' && <Spinner className="size-3" />}
               {c.status === 'ok' && <CheckIcon className="size-3.5 shrink-0 text-ok" />}
+              {c.status === 'warn' && <ShieldIcon className="size-3.5 shrink-0 text-warn" />}
               {c.status === 'fail' && <XIcon className="size-3.5 shrink-0 text-danger" />}
               <span className="font-extrabold">{c.name}</span>
               {c.status === 'ok' && (
                 <span className="ml-auto font-mono text-xs font-bold text-muted">
                   {c.count} 条 · {c.ms}ms
+                </span>
+              )}
+              {c.status === 'warn' && (
+                <span className="ml-auto truncate text-xs font-bold text-warn" title={c.error}>
+                  {c.count} 条 · 快照可用
                 </span>
               )}
               {c.status === 'fail' && (
